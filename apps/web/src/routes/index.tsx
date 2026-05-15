@@ -2,9 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
-import { Cloud, MapPin, RefreshCcw, Camera, ExternalLink, RefreshCw, Loader2 } from "lucide-react";
+import { Cloud, MapPin, RefreshCcw, Camera, ExternalLink, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@project-dailyquotes/ui/components/button";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
@@ -79,54 +78,77 @@ function HomeComponent() {
     setIsARMode(false);
   };
 
+  const getWeatherClass = (condition: string | undefined) => {
+    if (!condition) return "";
+    const lower = condition.toLowerCase();
+    if (lower.includes("sun") || lower.includes("clear")) return "weather-sunny";
+    if (lower.includes("cloud") || lower.includes("overcast")) return "weather-cloudy";
+    if (lower.includes("rain") || lower.includes("drizzle")) return "weather-rainy";
+    if (lower.includes("storm") || lower.includes("thunder")) return "weather-stormy";
+    if (lower.includes("fog") || lower.includes("mist") || lower.includes("haze")) return "weather-foggy";
+    if (lower.includes("snow") || lower.includes("sleet")) return "weather-snow";
+    if (lower.includes("night")) return "weather-night";
+    if (lower.includes("heat") || lower.includes("hot")) return "weather-heat";
+    return "";
+  };
+
   if (!location && !cityQuery && !locationError) {
     return (
-      <div className="flex h-full flex-col items-center justify-center space-y-4 p-4 text-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">Reading your sky...</p>
-        <Button variant="ghost" className="mt-4" onClick={() => setLocationError(true)}>
+      <div className="flex h-full flex-col items-center justify-center p-4 bg-background transition-colors duration-700">
+        <div className="dc-loading animate-[dc-enter_500ms_ease_both]">
+          Reading your sky…
+        </div>
+        <button
+          className="dc-btn dc-btn-ghost mt-8 animate-[dc-enter_500ms_ease_both_200ms]"
+          onClick={() => setLocationError(true)}
+        >
           Skip & enter city manually
-        </Button>
+        </button>
       </div>
     );
   }
 
   if (!location && !cityQuery && locationError) {
     return (
-      <div className="flex h-full flex-col items-center justify-center space-y-4 p-4 text-center max-w-md mx-auto">
-        <MapPin className="h-12 w-12 text-muted-foreground" />
-        <h2 className="text-xl font-semibold">Location Access Denied</h2>
-        <p className="text-sm text-muted-foreground">No worries — tell us your city instead.</p>
-        <form className="flex w-full space-x-2 mt-4" onSubmit={(e) => {
-          e.preventDefault();
-          const city = new FormData(e.currentTarget).get("city") as string;
-          if (city) {
-            setCityQuery(city);
-          }
-        }}>
-           <input name="city" placeholder="Davao City" className="flex-1 px-3 py-2 border border-border rounded-md bg-background text-foreground" required />
-           <Button type="submit">Search</Button>
-        </form>
+      <div className="flex h-full flex-col items-center justify-center p-6 text-center max-w-md mx-auto bg-background transition-colors duration-700">
+        <div className="animate-[dc-enter_500ms_ease_both]">
+          <MapPin className="h-12 w-12 text-primary mx-auto mb-6" />
+          <h2 className="text-2xl font-semibold mb-2">Location Access Denied</h2>
+          <p className="text-muted-foreground mb-8">No worries — tell us your city instead.</p>
+          <form className="dc-location-field w-full" onSubmit={(e) => {
+            e.preventDefault();
+            const city = new FormData(e.currentTarget).get("city") as string;
+            if (city) {
+              setCityQuery(city);
+            }
+          }}>
+             <input name="city" placeholder="Davao City" required />
+             <button type="submit" className="dc-btn dc-btn-primary">Search</button>
+          </form>
+        </div>
       </div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="flex h-full flex-col items-center justify-center space-y-4 p-4 text-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">Gathering your daily quote...</p>
+      <div className="flex h-full flex-col items-center justify-center p-4 bg-background transition-colors duration-700">
+        <div className="dc-loading animate-[dc-enter_500ms_ease_both]">
+          Gathering your daily quote…
+        </div>
       </div>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="flex h-full flex-col items-center justify-center space-y-4 p-4 text-center">
-        <p className="text-sm text-destructive">Failed to fetch the quote.</p>
-        <Button onClick={() => refetch()} variant="outline">
-          <RefreshCcw className="mr-2 h-4 w-4" /> Try Again
-        </Button>
+      <div className="flex h-full flex-col items-center justify-center p-6 text-center bg-background transition-colors duration-700">
+        <div className="animate-[dc-enter_500ms_ease_both]">
+          <p className="text-destructive mb-6 font-medium">Failed to fetch the quote.</p>
+          <button onClick={() => refetch()} className="dc-btn dc-btn-ghost">
+            <RefreshCcw className="mr-2 h-4 w-4" /> Try Again
+          </button>
+        </div>
       </div>
     );
   }
@@ -138,7 +160,7 @@ function HomeComponent() {
           <video
             autoPlay
             playsInline
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover opacity-80"
             ref={(ref) => {
               if (ref && !ref.srcObject) {
                 ref.srcObject = videoStream;
@@ -146,21 +168,27 @@ function HomeComponent() {
             }}
           />
         )}
-        <div className="absolute top-8 right-8">
-          <Button variant="secondary" onClick={stopARMode}>Close AR</Button>
+        <div className="absolute top-6 right-6 z-20">
+          <button className="dc-btn dc-btn-ghost bg-black/40 text-white border-white/20 backdrop-blur-md" onClick={stopARMode}>
+            Close AR
+          </button>
         </div>
-        <div className="absolute inset-0 bg-black/40 pointer-events-none" />
-        <div className="z-10 text-center p-6 bg-black/60 backdrop-blur-md border border-white/20 rounded-2xl shadow-2xl m-4 max-w-md pointer-events-auto">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-white/80 mb-2">
-            {data.weather.toneLabel}
-          </h2>
-          <blockquote className="text-3xl font-serif leading-tight text-white drop-shadow-md">
-            "{data.quote.text}"
-          </blockquote>
-          <p className="text-white/80 mt-4 font-medium drop-shadow-md">— {data.quote.author}</p>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60 pointer-events-none" />
+
+        <div className="z-10 p-1 m-4 max-w-md animate-[dc-float_6s_ease-in-out_infinite]">
+          <div className="dc-quote-card bg-black/40 backdrop-blur-xl border-white/10 shadow-2xl">
+            <div className="dc-quote-tone text-white/90 border-white/20 bg-white/10">
+              {data.weather.toneLabel}
+            </div>
+            <blockquote className="dc-quote-text text-white text-3xl md:text-4xl leading-tight">
+              "{data.quote.text}"
+            </blockquote>
+            <p className="dc-quote-author text-white/70">— {data.quote.author}</p>
+          </div>
         </div>
-        <div className="absolute bottom-8 z-10 flex space-x-4">
-          <Button variant="secondary" onClick={() => {
+
+        <div className="absolute bottom-8 z-20 flex gap-4">
+          <button className="dc-btn dc-btn-primary" onClick={() => {
             if (navigator.share) {
               navigator.share({
                 title: "Daily Motivation",
@@ -172,71 +200,69 @@ function HomeComponent() {
             }
           }}>
             <ExternalLink className="mr-2 h-4 w-4" /> Share
-          </Button>
+          </button>
         </div>
       </div>
     );
   }
 
-  const getToneBackgroundClass = (toneId: string) => {
-    switch (toneId) {
-      case "energy_action": return "bg-gradient-to-br from-amber-500/20 to-orange-600/20 dark:from-amber-900/40 dark:to-orange-950/40";
-      case "patience_perseverance": return "bg-gradient-to-br from-slate-300/50 to-slate-500/50 dark:from-slate-800/80 dark:to-slate-900/80";
-      case "resilience_growth": return "bg-gradient-to-br from-blue-400/30 to-cyan-600/30 dark:from-blue-900/50 dark:to-cyan-950/50";
-      case "courage_strength": return "bg-gradient-to-br from-indigo-900/60 to-purple-900/60 dark:from-indigo-950 dark:to-purple-950";
-      case "clarity_focus": return "bg-gradient-to-br from-gray-200/50 to-gray-300/50 dark:from-gray-800/80 dark:to-gray-900/80";
-      case "rest_renewal": return "bg-gradient-to-br from-sky-100/50 to-blue-200/50 dark:from-sky-900/60 dark:to-blue-950/60";
-      default: return "bg-gradient-to-br from-background to-muted";
-    }
-  };
-
   return (
-    <div className={`container mx-auto flex max-w-md flex-col items-center justify-center h-full p-4 space-y-8 relative overflow-hidden ${getToneBackgroundClass(data.weather.toneId)}`}>
-      {/* Weather info */}
-      <div className="absolute top-4 right-4 flex flex-col items-end opacity-80 text-sm">
-        <div className="flex items-center space-x-2">
-          <Cloud className="h-4 w-4" />
-          <span>{data.weather.condition}</span>
+    <div className={`min-h-full transition-colors duration-1000 ease-in-out ${getWeatherClass(data.weather.condition)}`}>
+      <div className="container mx-auto max-w-md h-full flex flex-col p-6 space-y-8">
+        {/* Weather info */}
+        <div className="flex justify-end pt-2 animate-[dc-enter_600ms_ease_both]">
+          <div className="dc-weather-badge backdrop-blur-sm bg-background/30 border-foreground/10">
+            <Cloud className="h-3.5 w-3.5" />
+            <span>{data.weather.condition} · {Math.round(data.weather.temp)}°C</span>
+          </div>
         </div>
-        <div>{Math.round(data.weather.temp)}°C</div>
-      </div>
 
-      <div className="flex flex-col items-center justify-center flex-1 space-y-8">
-        <div className="text-center space-y-4">
-          <h2 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
-            {data.weather.toneLabel}
-          </h2>
-          <blockquote className="text-2xl md:text-4xl font-serif leading-tight">
-            "{data.quote.text}"
-          </blockquote>
-          <p className="text-muted-foreground mt-4">— {data.quote.author}</p>
+        <div className="flex-1 flex flex-col items-center justify-center animate-[dc-enter_800ms_ease_both_200ms]">
+          <div className="dc-quote-card w-full shadow-xl" style={{ "--_glow-color": `var(--weather-${getWeatherClass(data.weather.condition).replace('weather-', '')}-glow)` } as any}>
+            <div className="dc-quote-tone">
+              {data.weather.toneLabel}
+            </div>
+            <blockquote className="dc-quote-text">
+              "{data.quote.text}"
+            </blockquote>
+            <p className="dc-quote-author">— {data.quote.author}</p>
+
+            <div className="dc-quote-footer">
+              <span>{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}</span>
+              <span className="flex items-center gap-1">
+                <MapPin className="h-3 w-3" />
+                {cityQuery || "Near you"}
+              </span>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div className="flex w-full flex-col space-y-3 pb-8">
-        <Button
-          onClick={startARMode}
-          className="w-full h-14 text-lg"
-        >
-          <Camera className="mr-2 h-5 w-5" /> View in AR
-        </Button>
-        <div className="flex w-full space-x-3">
-          <Button variant="secondary" className="flex-1" onClick={() => {
-            if (navigator.share) {
-              navigator.share({
-                title: "Daily Motivation",
-                text: `"${data.quote.text}" — ${data.quote.author}`,
-              }).catch(() => {});
-            } else {
-              navigator.clipboard.writeText(`"${data.quote.text}" — ${data.quote.author}`);
-              toast.success("Quote copied to clipboard!");
-            }
-          }}>
-            <ExternalLink className="mr-2 h-4 w-4" /> Share
-          </Button>
-          <Button variant="outline" className="flex-1" onClick={() => refetch()}>
-            <RefreshCw className="mr-2 h-4 w-4" /> Refresh
-          </Button>
+        <div className="flex flex-col gap-4 pb-10 animate-[dc-enter_800ms_ease_both_400ms]">
+          <button
+            onClick={startARMode}
+            className="dc-btn dc-btn-primary w-full h-14 text-lg"
+          >
+            <Camera className="mr-2 h-5 w-5" /> View in AR
+          </button>
+
+          <div className="flex gap-4">
+            <button className="dc-btn dc-btn-ghost flex-1" onClick={() => {
+              if (navigator.share) {
+                navigator.share({
+                  title: "Daily Motivation",
+                  text: `"${data.quote.text}" — ${data.quote.author}`,
+                }).catch(() => {});
+              } else {
+                navigator.clipboard.writeText(`"${data.quote.text}" — ${data.quote.author}`);
+                toast.success("Quote copied to clipboard!");
+              }
+            }}>
+              <ExternalLink className="mr-2 h-4 w-4" /> Share
+            </button>
+            <button className="dc-btn dc-btn-ghost flex-1" onClick={() => refetch()}>
+              <RefreshCw className="mr-2 h-4 w-4" /> Refresh
+            </button>
+          </div>
         </div>
       </div>
     </div>

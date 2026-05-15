@@ -1,4 +1,3 @@
-import { Button } from "@project-dailyquotes/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,15 +13,21 @@ export function ModeToggle() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="outline" size="icon" />}>
-        <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-        <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
-        <span className="sr-only">Toggle theme</span>
+      <DropdownMenuTrigger render={(props) => (
+        <button 
+          {...props} 
+          className="dc-btn dc-btn-ghost !p-2 rounded-full border-none hover:bg-foreground/5 relative"
+        >
+          <Sun className="h-[1.15rem] w-[1.15rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90 text-muted-foreground" />
+          <Moon className="absolute h-[1.15rem] w-[1.15rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0 text-muted-foreground" />
+          <span className="sr-only">Toggle theme</span>
+        </button>
+      )}>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>Light</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>Dark</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>System</DropdownMenuItem>
+      <DropdownMenuContent align="end" className="bg-background/80 backdrop-blur-md border-foreground/10">
+        <DropdownMenuItem onClick={() => setTheme("light")} className="focus:bg-primary/10">Light</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("dark")} className="focus:bg-primary/10">Dark</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("system")} className="focus:bg-primary/10">System</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
