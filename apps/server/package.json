@@ -7,7 +7,10 @@
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "dev": "bun run --hot src/index.ts",
-    "start": "bun run dist/index.mjs"
+    "start": "bun run dist/index.mjs",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.4.1",
@@ -23,7 +26,8 @@
     "@project-dailyquotes/config": "workspace:*",
     "@types/bun": "catalog:",
     "tsdown": "^0.21.9",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "^3.2.4"
   },
   "trustedDependencies": [
     "supabase"

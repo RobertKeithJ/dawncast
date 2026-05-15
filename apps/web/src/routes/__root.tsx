@@ -10,6 +10,7 @@ import "../index.css";
 
 const queryClient = new QueryClient();
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface RouterAppContext {}
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({

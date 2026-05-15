@@ -1,16 +1,12 @@
 import { cors } from "@elysiajs/cors";
 import { env } from "@project-dailyquotes/env/server";
 import { Elysia, t } from "elysia";
-import { db, quotes, pushSubscriptions } from "@project-dailyquotes/db";
-import { eq, and, sql } from "drizzle-orm";
-import { getToneForWeatherCode, getWeatherConditionLabel } from "./functions";
-import {
-  DEFAULT_QUOTE_TEXT,
-  DEFAULT_QUOTE_AUTHOR,
-  ZENQUOTES_API_URL,
-  OPENMETEO_GEOCODING_API_URL,
-  OPENMETEO_FORECAST_API_URL,
-} from "./constants";
+import { db, pushSubscriptions } from "@project-dailyquotes/db";
+import { eq } from "drizzle-orm";
+
+import { resolveWeather } from "./services/weather-service";
+import { getDailyQuote, getBonusQuote } from "./services/daily-quote-service";
+import { getQuoteHistory } from "./services/quote-service";
 
 const app = new Elysia()
   .use(
@@ -19,95 +15,45 @@ const app = new Elysia()
       methods: ["GET", "POST", "OPTIONS"],
     }),
   )
+  // ── Health ─────────────────────────────────────────────────────
   .get("/", () => "OK")
+
+  // ── Daily Quote ────────────────────────────────────────────────
   .get(
     "/api/daily-quote",
     async ({ query }) => {
-      let lat = query.lat ? parseFloat(query.lat) : null;
-      let lon = query.lon ? parseFloat(query.lon) : null;
-      let city = query.city || null;
+      const lat = query.lat ? parseFloat(query.lat) : null;
+      const lon = query.lon ? parseFloat(query.lon) : null;
+      const city = query.city ?? null;
+      const subscriptionId = query.subscriptionId ?? null;
+      const language = query.language ?? "en";
 
-      let weatherCode = 0; // default clear
-      let temp = 25;
+      const weather = await resolveWeather({ lat, lon, city });
 
-      if (city) {
-        try {
-          const geoRes = await fetch(`${OPENMETEO_GEOCODING_API_URL}?name=${encodeURIComponent(city)}&count=1`);
-          if (geoRes.ok) {
-            const geoData = await geoRes.json() as any;
-            if (geoData.results && geoData.results.length > 0) {
-              lat = geoData.results[0].latitude;
-              lon = geoData.results[0].longitude;
-            }
-          }
-        } catch (e) {
-          console.error("Failed to geocode city", e);
-        }
-      }
-
-      if (lat !== null && lon !== null) {
-        try {
-          const res = await fetch(`${OPENMETEO_FORECAST_API_URL}?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code`);
-          if (res.ok) {
-            const data = await res.json() as any;
-            weatherCode = data.current.weather_code;
-            temp = data.current.temperature_2m;
-          }
-        } catch (e) {
-          console.error("Failed to fetch weather", e);
-        }
-      }
-
-      const { toneId, toneLabel } = getToneForWeatherCode(weatherCode);
-      const conditionLabel = getWeatherConditionLabel(weatherCode);
-
-      let quoteText = DEFAULT_QUOTE_TEXT;
-      let author = DEFAULT_QUOTE_AUTHOR;
-
-      try {
-        // Try to fetch from the database first based on the weather's toneId
-        const dbQuotes = await db
-          .select()
-          .from(quotes)
-          .where(
-            and(
-              eq(quotes.toneCategoryId, toneId),
-              eq(quotes.isActive, true)
-            )
-          )
-          .orderBy(sql`RANDOM()`)
-          .limit(1);
-
-        if (dbQuotes && dbQuotes.length > 0 && dbQuotes[0]) {
-          quoteText = dbQuotes[0].text;
-          author = dbQuotes[0].author;
-        } else {
-          // Graceful fallback to ZenQuotes if our database is empty or lacks this tone category
-          const quoteRes = await fetch(ZENQUOTES_API_URL);
-          if (quoteRes.ok) {
-            const data = await quoteRes.json() as any;
-            if (data && data.length > 0) {
-              quoteText = data[0].q;
-              author = data[0].a;
-            }
-          }
-        }
-      } catch (e) {
-        console.error("Failed to fetch quote", e);
-      }
+      const quote = await getDailyQuote({
+        subscriptionId,
+        weather,
+        language,
+      });
 
       return {
         quote: {
-          text: quoteText,
-          author,
+          id: quote.id,
+          text: quote.text,
+          author: quote.author,
         },
         weather: {
-          code: weatherCode,
-          condition: conditionLabel,
-          temp,
-          toneId,
-          toneLabel,
-        }
+          code: weather.weatherCode,
+          condition: weather.conditionLabel,
+          temp: weather.temperatureCelsius,
+          toneId: weather.toneId,
+          toneLabel: weather.toneLabel,
+        },
+        meta: {
+          isPrimary: quote.isPrimary,
+          servedDate: quote.servedDate,
+          fromWeatherCache: weather.fromCache,
+        },
       };
     },
     {
@@ -115,18 +61,80 @@ const app = new Elysia()
         lat: t.Optional(t.String()),
         lon: t.Optional(t.String()),
         city: t.Optional(t.String()),
+        subscriptionId: t.Optional(t.String()),
+        language: t.Optional(t.String()),
       }),
-    }
+    },
   )
+
+  // ── Bonus Quote ────────────────────────────────────────────────
+  .post(
+    "/api/quote/bonus",
+    async ({ body }) => {
+      const weather = await resolveWeather({
+        lat: body.lat ?? null,
+        lon: body.lon ?? null,
+        city: body.city ?? null,
+      });
+
+      const quote = await getBonusQuote({
+        subscriptionId: body.subscriptionId ?? null,
+        weather,
+        language: body.language ?? "en",
+      });
+
+      return {
+        quote: {
+          id: quote.id,
+          text: quote.text,
+          author: quote.author,
+        },
+        meta: {
+          isPrimary: false,
+          servedDate: quote.servedDate,
+        },
+      };
+    },
+    {
+      body: t.Object({
+        lat: t.Optional(t.Number()),
+        lon: t.Optional(t.Number()),
+        city: t.Optional(t.String()),
+        subscriptionId: t.Optional(t.String()),
+        language: t.Optional(t.String()),
+      }),
+    },
+  )
+
+  // ── Quote History ──────────────────────────────────────────────
+  .get(
+    "/api/quote/history",
+    async ({ query }) => {
+      const limit = query.limit ? parseInt(query.limit, 10) : 30;
+      const entries = await getQuoteHistory(query.subscriptionId, limit);
+      return { entries };
+    },
+    {
+      query: t.Object({
+        subscriptionId: t.String(),
+        limit: t.Optional(t.String()),
+      }),
+    },
+  )
+
+  // ── Push Subscription ─────────────────────────────────────────
   .post(
     "/api/subscribe",
     async ({ body }) => {
       try {
-        await db.insert(pushSubscriptions)
+        await db
+          .insert(pushSubscriptions)
           .values({
             endpoint: body.endpoint,
             p256dh: body.keys.p256dh,
             auth: body.keys.auth,
+            timezone: body.timezone ?? "Asia/Manila",
+            notifyAt: body.notifyAt ?? "08:00",
           })
           .onConflictDoUpdate({
             target: pushSubscriptions.endpoint,
@@ -134,12 +142,20 @@ const app = new Elysia()
               p256dh: body.keys.p256dh,
               auth: body.keys.auth,
               isActive: true,
-              updatedAt: new Date()
-            }
+              updatedAt: new Date(),
+            },
           });
-        return { success: true };
+
+        // Return the subscription ID for the client to store
+        const sub = await db
+          .select({ id: pushSubscriptions.id })
+          .from(pushSubscriptions)
+          .where(eq(pushSubscriptions.endpoint, body.endpoint))
+          .limit(1);
+
+        return { success: true, subscriptionId: sub[0]?.id ?? null };
       } catch (error) {
-        console.error("Failed to save push subscription", error);
+        console.error("[subscribe] Failed to save push subscription:", error);
         throw new Error("Subscription failed");
       }
     },
@@ -150,8 +166,86 @@ const app = new Elysia()
           p256dh: t.String(),
           auth: t.String(),
         }),
-      })
-    }
+        timezone: t.Optional(t.String()),
+        notifyAt: t.Optional(t.String()),
+      }),
+    },
+  )
+
+  // ── Unsubscribe ────────────────────────────────────────────────
+  .post(
+    "/api/unsubscribe",
+    async ({ body }) => {
+      await db
+        .update(pushSubscriptions)
+        .set({ isActive: false, updatedAt: new Date() })
+        .where(eq(pushSubscriptions.endpoint, body.endpoint));
+      return { success: true };
+    },
+    {
+      body: t.Object({
+        endpoint: t.String(),
+      }),
+    },
+  )
+
+  // ── Preferences (read) ─────────────────────────────────────────
+  .get(
+    "/api/preferences",
+    async ({ query }) => {
+      const rows = await db
+        .select({
+          notifyAt: pushSubscriptions.notifyAt,
+          timezone: pushSubscriptions.timezone,
+          isActive: pushSubscriptions.isActive,
+        })
+        .from(pushSubscriptions)
+        .where(eq(pushSubscriptions.id, query.subscriptionId))
+        .limit(1);
+
+      const prefs = rows[0];
+      if (!prefs) {
+        return {
+          notifyAt: "08:00",
+          timezone: "Asia/Manila",
+          isActive: false,
+        };
+      }
+      return prefs;
+    },
+    {
+      query: t.Object({
+        subscriptionId: t.String(),
+      }),
+    },
+  )
+
+  // ── Preferences (write) ────────────────────────────────────────
+  .post(
+    "/api/preferences",
+    async ({ body }) => {
+      const updates: Partial<{
+        notifyAt: string;
+        timezone: string;
+        updatedAt: Date;
+      }> = { updatedAt: new Date() };
+      if (body.notifyAt) updates.notifyAt = body.notifyAt;
+      if (body.timezone) updates.timezone = body.timezone;
+
+      await db
+        .update(pushSubscriptions)
+        .set(updates)
+        .where(eq(pushSubscriptions.id, body.subscriptionId));
+
+      return { success: true };
+    },
+    {
+      body: t.Object({
+        subscriptionId: t.String(),
+        notifyAt: t.Optional(t.String()),
+        timezone: t.Optional(t.String()),
+      }),
+    },
   );
 
 app.listen(3000, () => {

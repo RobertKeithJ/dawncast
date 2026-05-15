@@ -17,15 +17,12 @@ export default function Header() {
         if ("serviceWorker" in navigator) {
           const registration = await navigator.serviceWorker.ready;
           // Note: In production you need to specify `applicationServerKey` (VAPID key)
-          let subscription = await registration.pushManager.getSubscription();
+          const subscription = await registration.pushManager.getSubscription();
 
           if (!subscription) {
-            // Because we don't have a VAPID key configured right now, we will mock the push subscription
-            // so that the Eden backend endpoint works securely and type-checks.
-            await api.api.subscribe.post({
-              endpoint: "https://mock-endpoint.com/xyz",
-              keys: { p256dh: "mock-p256dh", auth: "mock-auth" }
-            });
+            // VAPID key not yet configured — subscribing is a no-op until Phase 5.
+            // TODO (Phase 5): implement real VAPID push subscription here.
+            console.info("[notifications] No active push subscription found; VAPID flow not yet implemented.");
           } else {
             const subJson = subscription.toJSON();
             if (subJson.endpoint && subJson.keys?.p256dh && subJson.keys?.auth) {
