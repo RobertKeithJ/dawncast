@@ -1,0 +1,675 @@
+/* ============================================================
+   DAWNCAST — Brand Theme Override
+   AR Daily Motivational Quotes PWA
+   
+   Drop this file AFTER your shadcn globals.css import.
+   It overrides shadcn's tokens in-place — no class changes needed.
+
+   Font setup: add to your <head> or @font-face layer
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+
+/* ── LIGHT MODE ─────────────────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --background:              oklch(0.98 0.012 76);   /* warm cream */
+  --foreground:              oklch(0.16 0.025 54);   /* deep warm charcoal */
+  --card:                    oklch(1    0.007 76);
+  --card-foreground:         oklch(0.16 0.025 54);
+  --popover:                 oklch(1    0.007 76);
+  --popover-foreground:      oklch(0.16 0.025 54);
+
+  /* Primary — sunrise amber gold */
+  --primary:                 oklch(0.68 0.178 64);
+  --primary-foreground:      oklch(0.99 0.004 76);
+
+  /* Secondary — soft warm blush */
+  --secondary:               oklch(0.94 0.030 66);
+  --secondary-foreground:    oklch(0.22 0.030 54);
+
+  /* Muted */
+  --muted:                   oklch(0.93 0.015 70);
+  --muted-foreground:        oklch(0.50 0.022 60);
+
+  /* Accent — vibrant coral-sunrise */
+  --accent:                  oklch(0.66 0.198 37);
+  --accent-foreground:       oklch(0.99 0.004 76);
+
+  /* Utility */
+  --destructive:             oklch(0.58 0.220 27);
+  --border:                  oklch(0.88 0.018 70);
+  --input:                   oklch(0.90 0.018 70);
+  --ring:                    oklch(0.68 0.178 64);
+
+  /* Rounder radius — friendly & modern */
+  --radius:                  1rem;
+
+  /* Sidebar */
+  --sidebar:                 oklch(0.96 0.014 72);
+  --sidebar-foreground:      oklch(0.16 0.025 54);
+  --sidebar-primary:         oklch(0.68 0.178 64);
+  --sidebar-primary-foreground: oklch(0.99 0.004 76);
+  --sidebar-accent:          oklch(0.90 0.028 68);
+  --sidebar-accent-foreground: oklch(0.22 0.030 54);
+  --sidebar-border:          oklch(0.88 0.018 70);
+  --sidebar-ring:            oklch(0.68 0.178 64);
+
+  /* ── Weather Ambient Tokens ──────────────────────────────
+     Usage: apply .weather-[condition] to your root container.
+     Each set has -bg, -accent, and -glow variants.
+  ───────────────────────────────────────────────────────── */
+
+  /* ☀️  Sunny / Clear — "Energy & Action" */
+  --weather-sunny-bg:        oklch(0.97 0.060 82);
+  --weather-sunny-accent:    oklch(0.72 0.200 75);
+  --weather-sunny-glow:      oklch(0.88 0.130 80 / 0.45);
+
+  /* ☁️  Cloudy / Overcast — "Patience & Perseverance" */
+  --weather-cloudy-bg:       oklch(0.94 0.010 238);
+  --weather-cloudy-accent:   oklch(0.52 0.060 238);
+  --weather-cloudy-glow:     oklch(0.78 0.035 240 / 0.30);
+
+  /* 🌧  Rainy / Drizzle — "Resilience & Growth" */
+  --weather-rainy-bg:        oklch(0.93 0.018 222);
+  --weather-rainy-accent:    oklch(0.50 0.100 222);
+  --weather-rainy-glow:      oklch(0.72 0.070 222 / 0.30);
+
+  /* ⛈️  Stormy / Thunderstorm — "Courage & Strength" */
+  --weather-stormy-bg:       oklch(0.18 0.055 278);
+  --weather-stormy-fg:       oklch(0.96 0.010 76);   /* force light text */
+  --weather-stormy-accent:   oklch(0.72 0.180 298);
+  --weather-stormy-glow:     oklch(0.62 0.190 298 / 0.55);
+
+  /* 🌫  Foggy / Misty / Haze — "Clarity & Focus" */
+  --weather-foggy-bg:        oklch(0.96 0.008 282);
+  --weather-foggy-accent:    oklch(0.58 0.048 280);
+  --weather-foggy-glow:      oklch(0.84 0.030 282 / 0.35);
+
+  /* 🌙  Nighttime — "Rest & Reflection" */
+  --weather-night-bg:        oklch(0.10 0.040 268);
+  --weather-night-fg:        oklch(0.96 0.010 76);   /* force light text */
+  --weather-night-accent:    oklch(0.68 0.110 278);
+  --weather-night-glow:      oklch(0.55 0.150 278 / 0.50);
+
+  /* ❄️  Snow / Sleet — "Rest & Renewal" */
+  --weather-snow-bg:         oklch(0.97 0.004 222);
+  --weather-snow-accent:     oklch(0.60 0.080 228);
+  --weather-snow-glow:       oklch(0.88 0.040 228 / 0.35);
+
+  /* 🔥  Extreme Heat — "Endurance & Grit" */
+  --weather-heat-bg:         oklch(0.95 0.068 54);
+  --weather-heat-accent:     oklch(0.62 0.225 38);
+  --weather-heat-glow:       oklch(0.84 0.150 54 / 0.40);
+}
+
+/* ── DARK MODE ──────────────────────────────────────────── */
+.dark {
+  --background:              oklch(0.12 0.038 264);  /* deep midnight indigo */
+  --foreground:              oklch(0.96 0.010 76);   /* warm soft white */
+  --card:                    oklch(0.17 0.040 264);
+  --card-foreground:         oklch(0.96 0.010 76);
+  --popover:                 oklch(0.17 0.040 264);
+  --popover-foreground:      oklch(0.96 0.010 76);
+
+  /* Primary — luminous gold, slightly brighter in dark */
+  --primary:                 oklch(0.82 0.168 70);
+  --primary-foreground:      oklch(0.12 0.038 264);
+
+  --secondary:               oklch(0.20 0.050 264);
+  --secondary-foreground:    oklch(0.92 0.010 76);
+
+  --muted:                   oklch(0.20 0.038 264);
+  --muted-foreground:        oklch(0.62 0.028 268);
+
+  /* Accent — coral sunrise, vibrant on dark */
+  --accent:                  oklch(0.72 0.198 37);
+  --accent-foreground:       oklch(0.99 0.004 76);
+
+  --destructive:             oklch(0.70 0.190 22);
+  --border:                  oklch(1 0 0 / 10%);
+  --input:                   oklch(1 0 0 / 12%);
+  --ring:                    oklch(0.82 0.168 70);
+
+  /* Sidebar dark */
+  --sidebar:                 oklch(0.16 0.040 264);
+  --sidebar-foreground:      oklch(0.93 0.010 76);
+  --sidebar-primary:         oklch(0.82 0.168 70);
+  --sidebar-primary-foreground: oklch(0.12 0.038 264);
+  --sidebar-accent:          oklch(0.22 0.048 264);
+  --sidebar-accent-foreground: oklch(0.92 0.010 76);
+  --sidebar-border:          oklch(1 0 0 / 10%);
+  --sidebar-ring:            oklch(0.82 0.168 70);
+}
+
+/* ── TAILWIND THEME BRIDGE ──────────────────────────────── */
+@theme inline {
+  /* Fonts */
+  --font-sans:  "DM Sans", system-ui, sans-serif;
+  --font-quote: "Cormorant Garamond", Georgia, serif;
+
+  /* Expose weather accent colors as Tailwind utilities:
+     text-weather-sunny, bg-weather-rainy, etc. */
+  --color-weather-sunny:   var(--weather-sunny-accent);
+  --color-weather-cloudy:  var(--weather-cloudy-accent);
+  --color-weather-rainy:   var(--weather-rainy-accent);
+  --color-weather-stormy:  var(--weather-stormy-accent);
+  --color-weather-foggy:   var(--weather-foggy-accent);
+  --color-weather-night:   var(--weather-night-accent);
+  --color-weather-snow:    var(--weather-snow-accent);
+  --color-weather-heat:    var(--weather-heat-accent);
+
+  /* Keep all shadcn color mappings intact */
+  --color-background:              var(--background);
+  --color-foreground:              var(--foreground);
+  --color-card:                    var(--card);
+  --color-card-foreground:         var(--card-foreground);
+  --color-popover:                 var(--popover);
+  --color-popover-foreground:      var(--popover-foreground);
+  --color-primary:                 var(--primary);
+  --color-primary-foreground:      var(--primary-foreground);
+  --color-secondary:               var(--secondary);
+  --color-secondary-foreground:    var(--secondary-foreground);
+  --color-muted:                   var(--muted);
+  --color-muted-foreground:        var(--muted-foreground);
+  --color-accent:                  var(--accent);
+  --color-accent-foreground:       var(--accent-foreground);
+  --color-destructive:             var(--destructive);
+  --color-border:                  var(--border);
+  --color-input:                   var(--input);
+  --color-ring:                    var(--ring);
+  --color-sidebar:                 var(--sidebar);
+  --color-sidebar-foreground:      var(--sidebar-foreground);
+  --color-sidebar-primary:         var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent:          var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border:          var(--sidebar-border);
+  --color-sidebar-ring:            var(--sidebar-ring);
+
+  /* Radius scale */
+  --radius-sm:   calc(var(--radius) - 6px);
+  --radius-md:   calc(var(--radius) - 2px);
+  --radius-lg:   var(--radius);
+  --radius-xl:   calc(var(--radius) + 4px);
+  --radius-2xl:  calc(var(--radius) + 8px);
+  --radius-3xl:  calc(var(--radius) + 12px);
+  --radius-4xl:  calc(var(--radius) + 16px);
+}
+
+/* ── BASE LAYER ─────────────────────────────────────────── */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  html {
+    font-family: var(--font-sans);
+  }
+}
+
+/* ── UTILITY LAYER ──────────────────────────────────────── */
+@layer utilities {
+  /* Apply to any quote text element */
+  .font-quote {
+    font-family: var(--font-quote);
+  }
+}
+
+/* ── WEATHER THEME CLASSES ──────────────────────────────────
+   Apply one of these to your top-level page wrapper
+   (e.g. <main class="weather-rainy">).
+   
+   The class patches --background, --primary, --ring,
+   and --foreground where needed (stormy/night force white text).
+   All other tokens stay on the base brand palette.
+   
+   Usage in JSX:
+     const weatherClass = {
+       clear:       'weather-sunny',
+       sunny:       'weather-sunny',
+       clouds:      'weather-cloudy',
+       rain:        'weather-rainy',
+       drizzle:     'weather-rainy',
+       thunderstorm:'weather-stormy',
+       mist:        'weather-foggy',
+       fog:         'weather-foggy',
+       haze:        'weather-foggy',
+       snow:        'weather-snow',
+       night:       'weather-night',
+       heat:        'weather-heat',
+     }[weatherCode] ?? ''
+─────────────────────────────────────────────────────────── */
+@layer components {
+  .weather-sunny {
+    --background: var(--weather-sunny-bg);
+    --primary:    var(--weather-sunny-accent);
+    --ring:       var(--weather-sunny-accent);
+  }
+  .weather-cloudy {
+    --background: var(--weather-cloudy-bg);
+    --primary:    var(--weather-cloudy-accent);
+    --ring:       var(--weather-cloudy-accent);
+  }
+  .weather-rainy {
+    --background: var(--weather-rainy-bg);
+    --primary:    var(--weather-rainy-accent);
+    --ring:       var(--weather-rainy-accent);
+  }
+  .weather-stormy {
+    --background: var(--weather-stormy-bg);
+    --foreground: var(--weather-stormy-fg);
+    --primary:    var(--weather-stormy-accent);
+    --ring:       var(--weather-stormy-accent);
+    --border:     oklch(1 0 0 / 12%);
+    --muted:      oklch(0.24 0.055 278);
+    --muted-foreground: oklch(0.70 0.030 268);
+  }
+  .weather-foggy {
+    --background: var(--weather-foggy-bg);
+    --primary:    var(--weather-foggy-accent);
+    --ring:       var(--weather-foggy-accent);
+  }
+  .weather-night {
+    --background: var(--weather-night-bg);
+    --foreground: var(--weather-night-fg);
+    --primary:    var(--weather-night-accent);
+    --ring:       var(--weather-night-accent);
+    --border:     oklch(1 0 0 / 12%);
+    --muted:      oklch(0.18 0.040 268);
+    --muted-foreground: oklch(0.65 0.025 268);
+  }
+  .weather-snow {
+    --background: var(--weather-snow-bg);
+    --primary:    var(--weather-snow-accent);
+    --ring:       var(--weather-snow-accent);
+  }
+  .weather-heat {
+    --background: var(--weather-heat-bg);
+    --primary:    var(--weather-heat-accent);
+    --ring:       var(--weather-heat-accent);
+  }
+
+  /* ── QUOTE CARD ─────────────────────────────────────────────
+     The centrepiece. Wraps the quote text, author, and tone badge.
+     Usage: <div class="dc-quote-card"> … </div>
+     
+     Slots inside:
+       .dc-quote-tone      — "Energy & Action" badge at top
+       .dc-quote-text      — The quote itself (Cormorant Garamond)
+       .dc-quote-author    — "— Marcus Aurelius"
+       .dc-quote-footer    — Timestamp / location row at bottom
+  ─────────────────────────────────────────────────────────── */
+  .dc-quote-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-2xl);
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--card-foreground);
+    padding: 2rem 2rem 1.5rem;
+    box-shadow:
+      0 0 0 1px oklch(0 0 0 / 0.04),
+      0 4px 24px oklch(0 0 0 / 0.06);
+    transition:
+      background 600ms ease,
+      box-shadow 600ms ease,
+      border-color 600ms ease;
+  }
+
+  /* Ambient glow — rendered behind card content.
+     JS sets --_glow-color to the active weather glow token. */
+  .dc-quote-card::before {
+    content: "";
+    position: absolute;
+    inset: -30%;
+    background: radial-gradient(
+      ellipse at 50% 0%,
+      var(--_glow-color, transparent) 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+    transition: opacity 800ms ease;
+    z-index: 0;
+  }
+
+  .dc-quote-card > * { position: relative; z-index: 1; }
+
+  .dc-quote-tone {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;         /* 11px */
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--primary);
+    background: color-mix(in oklch, var(--primary) 12%, transparent);
+    border: 1px solid color-mix(in oklch, var(--primary) 20%, transparent);
+    border-radius: var(--radius-sm);
+    padding: 0.25rem 0.625rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .dc-quote-text {
+    font-family: var(--font-quote);
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+    font-weight: 400;
+    font-style: italic;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    color: var(--foreground);
+    margin: 0 0 1.25rem;
+    transition: color 600ms ease;
+  }
+
+  .dc-quote-author {
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;         /* 13px */
+    font-weight: 500;
+    color: var(--muted-foreground);
+    margin: 0 0 1.75rem;
+    letter-spacing: 0.02em;
+  }
+  .dc-quote-author::before { content: "— "; }
+
+  .dc-quote-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;           /* 12px */
+    color: var(--muted-foreground);
+    transition: border-color 600ms ease;
+  }
+
+  /* ── WEATHER BADGE ──────────────────────────────────────────
+     Small pill shown near the quote with icon + condition text.
+     Usage: <span class="dc-weather-badge">☁️ Overcast · 27°C</span>
+  ─────────────────────────────────────────────────────────── */
+  .dc-weather-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--muted-foreground);
+    background: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-4xl);
+    padding: 0.25rem 0.75rem;
+    transition: background 600ms ease, border-color 600ms ease;
+  }
+
+  /* ── ACTION BUTTONS ─────────────────────────────────────────
+     Pair: primary solid + ghost outline.
+     Usage:
+       <button class="dc-btn dc-btn-primary">View in AR</button>
+       <button class="dc-btn dc-btn-ghost">Share</button>
+  ─────────────────────────────────────────────────────────── */
+  .dc-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: var(--radius-lg);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.625rem 1.25rem;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition:
+      background 200ms ease,
+      border-color 200ms ease,
+      color 200ms ease,
+      transform 100ms ease,
+      box-shadow 200ms ease;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .dc-btn:active { transform: scale(0.97); }
+  .dc-btn:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .dc-btn-primary {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border-color: var(--primary);
+    box-shadow: 0 2px 12px color-mix(in oklch, var(--primary) 30%, transparent);
+  }
+  .dc-btn-primary:hover {
+    background: color-mix(in oklch, var(--primary) 88%, black);
+    border-color: color-mix(in oklch, var(--primary) 88%, black);
+    box-shadow: 0 4px 20px color-mix(in oklch, var(--primary) 45%, transparent);
+  }
+
+  .dc-btn-ghost {
+    background: transparent;
+    color: var(--foreground);
+    border-color: var(--border);
+  }
+  .dc-btn-ghost:hover {
+    background: var(--muted);
+    border-color: color-mix(in oklch, var(--border) 80%, var(--primary));
+  }
+
+  /* ── LOADING STATE ──────────────────────────────────────────
+     "Reading your sky…" skeleton screen.
+     Usage: <div class="dc-loading">Reading your sky…</div>
+  ─────────────────────────────────────────────────────────── */
+  .dc-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 3rem 2rem;
+    font-family: var(--font-quote);
+    font-size: 1.125rem;
+    font-style: italic;
+    color: var(--muted-foreground);
+    text-align: center;
+  }
+  .dc-loading::before {
+    content: "";
+    display: block;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    border-top-color: var(--primary);
+    animation: dc-spin 900ms linear infinite;
+  }
+
+  /* ── TOAST ──────────────────────────────────────────────────
+     In-app notification strip.
+     Usage: <div class="dc-toast [dc-toast-info]">…</div>
+     Add dc-toast-open to animate in; remove to animate out.
+  ─────────────────────────────────────────────────────────── */
+  .dc-toast {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    translate: -50% 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 240px;
+    max-width: min(440px, calc(100vw - 2rem));
+    background: var(--card);
+    color: var(--card-foreground);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 0.75rem 1rem;
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    box-shadow: 0 8px 32px oklch(0 0 0 / 0.12);
+    opacity: 0;
+    transform: translateY(-0.5rem);
+    pointer-events: none;
+    transition:
+      opacity 250ms ease,
+      transform 250ms ease;
+  }
+  .dc-toast.dc-toast-open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .dc-toast-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+    flex-shrink: 0;
+  }
+
+  /* ── LOCATION INPUT ─────────────────────────────────────────
+     Fallback manual city entry.
+     Usage:
+       <div class="dc-location-field">
+         <input … placeholder="Your city" />
+         <button class="dc-btn dc-btn-primary">Go</button>
+       </div>
+  ─────────────────────────────────────────────────────────── */
+  .dc-location-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 0.25rem 0.25rem 0.25rem 1rem;
+    transition: border-color 200ms ease, box-shadow 200ms ease;
+  }
+  .dc-location-field:focus-within {
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 20%, transparent);
+  }
+  .dc-location-field input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    color: var(--foreground);
+    outline: none;
+  }
+  .dc-location-field input::placeholder { color: var(--muted-foreground); }
+
+  /* ── PREFERENCE CHIP ────────────────────────────────────────
+     Selectable tone category in preferences screen.
+     Usage: <button class="dc-pref-chip [dc-pref-chip-active]">…</button>
+  ─────────────────────────────────────────────────────────── */
+  .dc-pref-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    border-radius: var(--radius-4xl);
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--muted-foreground);
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    padding: 0.375rem 0.875rem;
+    cursor: pointer;
+    transition:
+      background 180ms ease,
+      border-color 180ms ease,
+      color 180ms ease;
+  }
+  .dc-pref-chip:hover {
+    border-color: var(--primary);
+    color: var(--foreground);
+  }
+  .dc-pref-chip.dc-pref-chip-active {
+    background: color-mix(in oklch, var(--primary) 14%, transparent);
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  /* ── AR OVERLAY FRAME ───────────────────────────────────────
+     CSS AR simulation fallback — quote floats over camera feed.
+     Usage: <div class="dc-ar-frame"> <p class="dc-ar-quote">…</p> </div>
+  ─────────────────────────────────────────────────────────── */
+  .dc-ar-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 9 / 16;
+    max-width: 390px;
+    margin-inline: auto;
+    overflow: hidden;
+    border-radius: var(--radius-2xl);
+    background: oklch(0.06 0.02 264);
+  }
+  .dc-ar-quote {
+    position: absolute;
+    inset-inline: 1.5rem;
+    top: 50%;
+    translate: 0 -50%;
+    font-family: var(--font-quote);
+    font-size: clamp(1.25rem, 5vw, 1.75rem);
+    font-style: italic;
+    font-weight: 400;
+    color: #fff;
+    text-align: center;
+    line-height: 1.4;
+    text-shadow:
+      0 2px 16px oklch(0 0 0 / 0.6),
+      0 0 48px color-mix(in oklch, var(--primary) 50%, transparent);
+    animation: dc-float 6s ease-in-out infinite;
+  }
+}
+
+/* ── KEYFRAMES ──────────────────────────────────────────────── */
+@keyframes dc-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes dc-float {
+  0%, 100% { transform: translateY(0);     }
+  50%       { transform: translateY(-6px); }
+}
+
+/* Fade + slide up — reuse on any element entering the view.
+   Apply animation: dc-enter 400ms ease both; */
+@keyframes dc-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Subtle pulse for the ambient glow when weather first loads */
+@keyframes dc-glow-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1;   }
+}
+
+/* ── MOTION PREFERENCES ─────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .dc-loading::before { animation: none; border-top-color: var(--primary); }
+  .dc-ar-quote        { animation: none; }
+  .dc-toast           { transition: opacity 100ms ease; }
+}
