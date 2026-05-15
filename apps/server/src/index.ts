@@ -3,57 +3,14 @@ import { env } from "@project-dailyquotes/env/server";
 import { Elysia, t } from "elysia";
 import { db, quotes, pushSubscriptions } from "@project-dailyquotes/db";
 import { eq, and, sql } from "drizzle-orm";
-
-function getToneForWeatherCode(code: number): { toneId: string, toneLabel: string } {
-  if (code === 0 || code === 1 || code === 2) {
-    return { toneId: "energy_action", toneLabel: "Energy & Action" };
-  } else if (code === 3) {
-    return { toneId: "patience_perseverance", toneLabel: "Patience & Perseverance" };
-  } else if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
-    return { toneId: "resilience_growth", toneLabel: "Resilience & Growth" };
-  } else if (code >= 95 && code <= 99) {
-    return { toneId: "courage_strength", toneLabel: "Courage & Strength" };
-  } else if (code === 45 || code === 48) {
-    return { toneId: "clarity_focus", toneLabel: "Clarity & Focus" };
-  } else if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) {
-    return { toneId: "rest_renewal", toneLabel: "Rest & Renewal" };
-  }
-  return { toneId: "general_motivation", toneLabel: "General Motivation" };
-}
-
-function getWeatherConditionLabel(code: number): string {
-  const mapping: Record<number, string> = {
-    0: "Clear sky",
-    1: "Mainly clear",
-    2: "Partly cloudy",
-    3: "Overcast",
-    45: "Fog",
-    48: "Depositing rime fog",
-    51: "Light drizzle",
-    53: "Moderate drizzle",
-    55: "Dense drizzle",
-    56: "Light freezing drizzle",
-    57: "Dense freezing drizzle",
-    61: "Slight rain",
-    63: "Moderate rain",
-    65: "Heavy rain",
-    66: "Light freezing rain",
-    67: "Heavy freezing rain",
-    71: "Slight snow fall",
-    73: "Moderate snow fall",
-    75: "Heavy snow fall",
-    77: "Snow grains",
-    80: "Slight rain showers",
-    81: "Moderate rain showers",
-    82: "Violent rain showers",
-    85: "Slight snow showers",
-    86: "Heavy snow showers",
-    95: "Thunderstorm",
-    96: "Thunderstorm with slight hail",
-    99: "Thunderstorm with heavy hail",
-  };
-  return mapping[code] || "Unknown";
-}
+import { getToneForWeatherCode, getWeatherConditionLabel } from "./functions";
+import {
+  DEFAULT_QUOTE_TEXT,
+  DEFAULT_QUOTE_AUTHOR,
+  ZENQUOTES_API_URL,
+  OPENMETEO_GEOCODING_API_URL,
+  OPENMETEO_FORECAST_API_URL,
+} from "./constants";
 
 const app = new Elysia()
   .use(
@@ -75,7 +32,7 @@ const app = new Elysia()
 
       if (city) {
         try {
-          const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1`);
+          const geoRes = await fetch(`${OPENMETEO_GEOCODING_API_URL}?name=${encodeURIComponent(city)}&count=1`);
           if (geoRes.ok) {
             const geoData = await geoRes.json() as any;
             if (geoData.results && geoData.results.length > 0) {
@@ -90,7 +47,7 @@ const app = new Elysia()
 
       if (lat !== null && lon !== null) {
         try {
-          const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code`);
+          const res = await fetch(`${OPENMETEO_FORECAST_API_URL}?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code`);
           if (res.ok) {
             const data = await res.json() as any;
             weatherCode = data.current.weather_code;
@@ -104,8 +61,8 @@ const app = new Elysia()
       const { toneId, toneLabel } = getToneForWeatherCode(weatherCode);
       const conditionLabel = getWeatherConditionLabel(weatherCode);
 
-      let quoteText = "It always seems impossible until it's done.";
-      let author = "Nelson Mandela";
+      let quoteText = DEFAULT_QUOTE_TEXT;
+      let author = DEFAULT_QUOTE_AUTHOR;
 
       try {
         // Try to fetch from the database first based on the weather's toneId
@@ -126,7 +83,7 @@ const app = new Elysia()
           author = dbQuotes[0].author;
         } else {
           // Graceful fallback to ZenQuotes if our database is empty or lacks this tone category
-          const quoteRes = await fetch("https://zenquotes.io/api/random");
+          const quoteRes = await fetch(ZENQUOTES_API_URL);
           if (quoteRes.ok) {
             const data = await quoteRes.json() as any;
             if (data && data.length > 0) {
