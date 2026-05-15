@@ -1,6 +1,8 @@
 import { cors } from "@elysiajs/cors";
 import { env } from "@project-dailyquotes/env/server";
 import { Elysia, t } from "elysia";
+import { db, quotes, pushSubscriptions } from "@project-dailyquotes/db";
+import { eq, and, sql } from "drizzle-orm";
 
 function getToneForWeatherCode(code: number): { toneId: string, toneLabel: string } {
   if (code === 0 || code === 1 || code === 2) {
@@ -102,21 +104,39 @@ const app = new Elysia()
       const { toneId, toneLabel } = getToneForWeatherCode(weatherCode);
       const conditionLabel = getWeatherConditionLabel(weatherCode);
 
-      // Fetch a quote from zenquotes as placeholder
       let quoteText = "It always seems impossible until it's done.";
       let author = "Nelson Mandela";
 
       try {
-        const quoteRes = await fetch("https://zenquotes.io/api/random");
-        if (quoteRes.ok) {
-          const data = await quoteRes.json() as any;
-          if (data && data.length > 0) {
-            quoteText = data[0].q;
-            author = data[0].a;
+        // Try to fetch from the database first based on the weather's toneId
+        const dbQuotes = await db
+          .select()
+          .from(quotes)
+          .where(
+            and(
+              eq(quotes.toneCategoryId, toneId),
+              eq(quotes.isActive, true)
+            )
+          )
+          .orderBy(sql`RANDOM()`)
+          .limit(1);
+
+        if (dbQuotes && dbQuotes.length > 0 && dbQuotes[0]) {
+          quoteText = dbQuotes[0].text;
+          author = dbQuotes[0].author;
+        } else {
+          // Graceful fallback to ZenQuotes if our database is empty or lacks this tone category
+          const quoteRes = await fetch("https://zenquotes.io/api/random");
+          if (quoteRes.ok) {
+            const data = await quoteRes.json() as any;
+            if (data && data.length > 0) {
+              quoteText = data[0].q;
+              author = data[0].a;
+            }
           }
         }
       } catch (e) {
-        console.error("Failed to fetch zenquotes", e);
+        console.error("Failed to fetch quote", e);
       }
 
       return {
@@ -144,10 +164,27 @@ const app = new Elysia()
   .post(
     "/api/subscribe",
     async ({ body }) => {
-      // In a real app we would save to pushSubscriptions table
-      // e.g. await db.insert(pushSubscriptions).values(body)
-      console.log("Subscribed:", body.endpoint);
-      return { success: true };
+      try {
+        await db.insert(pushSubscriptions)
+          .values({
+            endpoint: body.endpoint,
+            p256dh: body.keys.p256dh,
+            auth: body.keys.auth,
+          })
+          .onConflictDoUpdate({
+            target: pushSubscriptions.endpoint,
+            set: {
+              p256dh: body.keys.p256dh,
+              auth: body.keys.auth,
+              isActive: true,
+              updatedAt: new Date()
+            }
+          });
+        return { success: true };
+      } catch (error) {
+        console.error("Failed to save push subscription", error);
+        throw new Error("Subscription failed");
+      }
     },
     {
       body: t.Object({

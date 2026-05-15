@@ -15,6 +15,7 @@
     "@project-dailyquotes/env": "workspace:*",
     "@sinclair/typebox": "^0.34.49",
     "dotenv": "catalog:",
+    "drizzle-orm": "^0.45.2",
     "elysia": "^1.4.28",
     "zod": "catalog:"
   },

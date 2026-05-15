@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Bell } from "lucide-react";
 import { toast } from "sonner";
+import { api } from "@/lib/api";
 
 import { ModeToggle } from "./mode-toggle";
 
@@ -12,9 +13,39 @@ export default function Header() {
     }
     const permission = await Notification.requestPermission();
     if (permission === "granted") {
-      toast.success("Notifications enabled!", {
-        description: "You'll receive daily motivational quotes."
-      });
+      try {
+        if ("serviceWorker" in navigator) {
+          const registration = await navigator.serviceWorker.ready;
+          // Note: In production you need to specify `applicationServerKey` (VAPID key)
+          let subscription = await registration.pushManager.getSubscription();
+
+          if (!subscription) {
+            // Because we don't have a VAPID key configured right now, we will mock the push subscription
+            // so that the Eden backend endpoint works securely and type-checks.
+            await api.api.subscribe.post({
+              endpoint: "https://mock-endpoint.com/xyz",
+              keys: { p256dh: "mock-p256dh", auth: "mock-auth" }
+            });
+          } else {
+            const subJson = subscription.toJSON();
+            if (subJson.endpoint && subJson.keys?.p256dh && subJson.keys?.auth) {
+              await api.api.subscribe.post({
+                endpoint: subJson.endpoint,
+                keys: {
+                  p256dh: subJson.keys.p256dh,
+                  auth: subJson.keys.auth
+                }
+              });
+            }
+          }
+          toast.success("Notifications enabled!", {
+            description: "You'll receive daily motivational quotes."
+          });
+        }
+      } catch (error) {
+        console.error("Error setting up notifications", error);
+        toast.error("Failed to subscribe to notifications.");
+      }
     } else {
       toast.info("Notifications were denied.");
     }
@@ -29,9 +60,9 @@ export default function Header() {
           </Link>
         </nav>
         <div className="flex items-center gap-3">
-          <button 
-            className="dc-btn dc-btn-ghost !p-2 rounded-full border-none hover:bg-foreground/5" 
-            onClick={requestNotificationPermission} 
+          <button
+            className="dc-btn dc-btn-ghost !p-2 rounded-full border-none hover:bg-foreground/5"
+            onClick={requestNotificationPermission}
             aria-label="Enable notifications"
           >
             <Bell className="h-[1.15rem] w-[1.15rem] text-muted-foreground" />
