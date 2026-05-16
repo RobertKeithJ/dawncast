@@ -19,18 +19,18 @@
     "@project-dailyquotes/db": "workspace:*",
     "@project-dailyquotes/env": "workspace:*",
     "@sinclair/typebox": "^0.34.49",
-    "dotenv": "catalog:",
+    "dotenv": "^16.4.0",
     "drizzle-orm": "^0.45.2",
     "elysia": "^1.4.28",
     "papaparse": "^5.5.3",
-    "zod": "catalog:"
+    "zod": "^3.24.0"
   },
   "devDependencies": {
     "@project-dailyquotes/config": "workspace:*",
-    "@types/bun": "catalog:",
+    "@types/bun": "^1.0.0",
     "@types/papaparse": "^5.5.2",
     "tsdown": "^0.21.9",
-    "typescript": "catalog:",
+    "typescript": "^5.7.0",
     "vitest": "^3.2.4"
   },
   "trustedDependencies": [

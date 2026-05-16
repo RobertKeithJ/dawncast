@@ -216,7 +216,7 @@ function HomeComponent() {
   // ── Loading: waiting for geolocation ────────────────────────────
   if (!cachedQuote && !location && !cityQuery && !locationError) {
     return (
-      <div className="flex h-full flex-col items-center justify-center p-4 bg-background transition-colors duration-700">
+      <div className="container mx-auto max-w-md h-full flex flex-col items-center justify-center p-6 bg-background transition-colors duration-700">
         <div className="dc-loading animate-[dc-enter_500ms_ease_both]">
           Reading your sky…
         </div>
@@ -233,7 +233,7 @@ function HomeComponent() {
   // ── Location denied — city input ───────────────────────────────
   if (!cachedQuote && !location && !cityQuery && locationError) {
     return (
-      <div className="flex h-full flex-col items-center justify-center p-6 text-center max-w-md mx-auto bg-background transition-colors duration-700">
+      <div className="container mx-auto max-w-md h-full flex flex-col items-center justify-center p-6 text-center bg-background transition-colors duration-700">
         <div className="animate-[dc-enter_500ms_ease_both]">
           <MapPin className="h-12 w-12 text-primary mx-auto mb-6" />
           <h2 className="text-2xl font-semibold mb-2">Location Access Denied</h2>
@@ -257,7 +257,7 @@ function HomeComponent() {
   // ── Fetching from API ──────────────────────────────────────────
   if (isLoading && !cachedQuote) {
     return (
-      <div className="flex h-full flex-col items-center justify-center p-4 bg-background transition-colors duration-700">
+      <div className="container mx-auto max-w-md h-full flex flex-col items-center justify-center p-6 bg-background transition-colors duration-700">
         <div className="dc-loading animate-[dc-enter_500ms_ease_both]">
           Gathering your daily quote…
         </div>
@@ -268,7 +268,7 @@ function HomeComponent() {
   // ── API Error with no cache ────────────────────────────────────
   if ((error || !activeQuote) && !cachedQuote) {
     return (
-      <div className="flex h-full flex-col items-center justify-center p-6 text-center bg-background transition-colors duration-700">
+      <div className="container mx-auto max-w-md h-full flex flex-col items-center justify-center p-6 text-center bg-background transition-colors duration-700">
         <div className="animate-[dc-enter_500ms_ease_both]">
           <p className="text-destructive mb-6 font-medium">Failed to fetch the quote.</p>
           <button onClick={() => refetch()} className="dc-btn dc-btn-ghost">
@@ -323,7 +323,7 @@ function HomeComponent() {
               <div className="dc-quote-tone text-white/90 border-white/20 bg-white/10">
                 {weatherInfo.toneLabel}
               </div>
-              <blockquote className="dc-quote-text text-white text-3xl md:text-4xl leading-tight">
+              <blockquote className="dc-quote-text !text-white !mb-5">
                 &ldquo;{activeQuote.text}&rdquo;
               </blockquote>
               <p className="dc-quote-author text-white/70">— {activeQuote.author}</p>
