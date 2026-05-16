@@ -4,6 +4,7 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import Header from "@/components/header";
+import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 import { ThemeProvider } from "@/components/theme-provider";
 
 import "../index.css";
@@ -50,6 +51,7 @@ function RootComponent() {
             <Outlet />
           </div>
           <Toaster richColors />
+          <PwaInstallPrompt />
         </ThemeProvider>
       </QueryClientProvider>
       <TanStackRouterDevtools position="bottom-left" />
