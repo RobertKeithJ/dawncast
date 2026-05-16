@@ -1,8 +1,7 @@
 // schema/quotes.ts
-// Owns: quote content, tone categories, and their relationship
-
 import {
   boolean,
+  index,
   jsonb,
   pgEnum,
   pgTable,
@@ -14,24 +13,34 @@ import {
 export const languageEnum = pgEnum("language", ["en", "fil"]);
 
 export const toneCategories = pgTable("tone_categories", {
-  id: text("id").primaryKey(), // human-readable slug: "resilience_growth"
-  label: text("label").notNull(), // display: "Resilience & Growth"
+  id: text("id").primaryKey(),
+  label: text("label").notNull(),
   description: text("description"),
-  weatherCodes: jsonb("weather_codes").$type<number[]>().notNull(), // WMO codes mapped to this tone
+  weatherCodes: jsonb("weather_codes").$type<number[]>().notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const quotes = pgTable("quotes", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  text: text("text").notNull(),
-  author: text("author").notNull().default("Unknown"),
-  toneCategoryId: text("tone_category_id")
-    .notNull()
-    .references(() => toneCategories.id),
-  language: languageEnum("language").notNull().default("en"),
-  isActive: boolean("is_active").notNull().default(true),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export const quotes = pgTable(
+  "quotes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    text: text("text").notNull(),
+    author: text("author").notNull().default("Unknown"),
+    toneCategoryId: text("tone_category_id")
+      .notNull()
+      .references(() => toneCategories.id),
+    language: languageEnum("language").notNull().default("en"),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("quotes_tone_lang_active_idx").on(
+      table.toneCategoryId,
+      table.language,
+      table.isActive,
+    ),
+  ],
+);
 
 export type ToneCategory = typeof toneCategories.$inferSelect;
 export type Quote = typeof quotes.$inferSelect;

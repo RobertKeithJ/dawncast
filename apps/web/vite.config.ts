@@ -21,10 +21,45 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
-        name: "project-dailyquotes",
-        short_name: "project-dailyquotes",
-        description: "project-dailyquotes - PWA Application",
+        name: "Daily Motivation AR",
+        short_name: "DailyQuotes",
+        description: "Weather-aware motivational quotes with AR display",
         theme_color: "#0c0c0c",
+        background_color: "#0c0c0c",
+        display: "standalone",
+        orientation: "portrait",
+      },
+      workbox: {
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/api\.open-meteo\.com\/.*/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "weather-api-cache",
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 2, // 2 hours
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            urlPattern: /\/api\/daily-quote.*/i,
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "daily-quote-cache",
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24, // 24 hours
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+        ],
       },
       pwaAssets: { disabled: false, config: true },
       devOptions: { enabled: true },

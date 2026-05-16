@@ -15,7 +15,10 @@
     "db:push": "turbo -F @project-dailyquotes/db db:push",
     "db:studio": "turbo -F @project-dailyquotes/db db:studio",
     "db:generate": "turbo -F @project-dailyquotes/db db:generate",
-    "db:migrate": "turbo -F @project-dailyquotes/db db:migrate"
+    "db:migrate": "turbo -F @project-dailyquotes/db db:migrate",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@project-dailyquotes/env": "workspace:*",
@@ -23,10 +26,17 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.60.0",
     "@project-dailyquotes/config": "workspace:*",
     "@types/bun": "catalog:",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.26",
+    "globals": "^16.5.0",
     "turbo": "^2.8.12",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "typescript-eslint": "^8.59.3"
   },
   "packageManager": "pnpm@10.33.2"
 }

@@ -1,14 +1,14 @@
 /* ============================================================
    DAWNCAST — Brand Theme Override
    AR Daily Motivational Quotes PWA
-   
+
    Drop this file AFTER your shadcn globals.css import.
    It overrides shadcn's tokens in-place — no class changes needed.
 
    Font setup: add to your <head> or @font-face layer
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+/* Google Fonts are imported in globals.css before all other rules */
 
 /* ── LIGHT MODE ─────────────────────────────────────────── */
 :root {
@@ -225,11 +225,11 @@
 /* ── WEATHER THEME CLASSES ──────────────────────────────────
    Apply one of these to your top-level page wrapper
    (e.g. <main class="weather-rainy">).
-   
+
    The class patches --background, --primary, --ring,
    and --foreground where needed (stormy/night force white text).
    All other tokens stay on the base brand palette.
-   
+
    Usage in JSX:
      const weatherClass = {
        clear:       'weather-sunny',
@@ -299,7 +299,7 @@
   /* ── QUOTE CARD ─────────────────────────────────────────────
      The centrepiece. Wraps the quote text, author, and tone badge.
      Usage: <div class="dc-quote-card"> … </div>
-     
+
      Slots inside:
        .dc-quote-tone      — "Energy & Action" badge at top
        .dc-quote-text      — The quote itself (Cormorant Garamond)

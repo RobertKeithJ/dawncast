@@ -8,4 +8,5 @@ export function ThemeProvider({
   return <NextThemesProvider {...props}>{children}</NextThemesProvider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { useTheme } from "next-themes";
