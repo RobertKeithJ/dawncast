@@ -6,7 +6,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/*/package.json packages/
 COPY apps/*/package.json apps/
 
-RUN corepack enable && pnpm install --frozen-lockfile
+RUN bun add -g pnpm@10 && pnpm install --frozen-lockfile
 
 COPY . .
 
@@ -14,4 +14,4 @@ RUN pnpm --filter server build
 
 EXPOSE 3000
 
-CMD ["bun", "run", "start"]
+CMD ["pnpm", "--filter", "server", "start"]
