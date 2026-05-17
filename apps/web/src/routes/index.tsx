@@ -216,7 +216,7 @@ function HomeComponent() {
   // ── Loading: waiting for geolocation ────────────────────────────
   if (!cachedQuote && !location && !cityQuery && !locationError) {
     return (
-      <div className="container mx-auto max-w-md h-full flex flex-col items-center justify-center p-6 bg-background transition-colors duration-700">
+      <div className="dc-container h-full flex flex-col items-center justify-center py-6 transition-colors duration-700">
         <div className="dc-loading animate-[dc-enter_500ms_ease_both]">
           Reading your sky…
         </div>
@@ -233,8 +233,8 @@ function HomeComponent() {
   // ── Location denied — city input ───────────────────────────────
   if (!cachedQuote && !location && !cityQuery && locationError) {
     return (
-      <div className="container mx-auto max-w-md h-full flex flex-col items-center justify-center p-6 text-center bg-background transition-colors duration-700">
-        <div className="animate-[dc-enter_500ms_ease_both]">
+      <div className="dc-container h-full flex flex-col items-center justify-center py-6 text-center transition-colors duration-700">
+        <div className="w-full max-w-sm animate-[dc-enter_500ms_ease_both]">
           <MapPin className="h-12 w-12 text-primary mx-auto mb-6" />
           <h2 className="text-2xl font-semibold mb-2">Location Access Denied</h2>
           <p className="text-muted-foreground mb-8">No worries — tell us your city instead.</p>
@@ -257,7 +257,7 @@ function HomeComponent() {
   // ── Fetching from API ──────────────────────────────────────────
   if (isLoading && !cachedQuote) {
     return (
-      <div className="container mx-auto max-w-md h-full flex flex-col items-center justify-center p-6 bg-background transition-colors duration-700">
+      <div className="dc-container h-full flex flex-col items-center justify-center py-6 transition-colors duration-700">
         <div className="dc-loading animate-[dc-enter_500ms_ease_both]">
           Gathering your daily quote…
         </div>
@@ -268,7 +268,7 @@ function HomeComponent() {
   // ── API Error with no cache ────────────────────────────────────
   if ((error || !activeQuote) && !cachedQuote) {
     return (
-      <div className="container mx-auto max-w-md h-full flex flex-col items-center justify-center p-6 text-center bg-background transition-colors duration-700">
+      <div className="dc-container h-full flex flex-col items-center justify-center py-6 text-center transition-colors duration-700">
         <div className="animate-[dc-enter_500ms_ease_both]">
           <p className="text-destructive mb-6 font-medium">Failed to fetch the quote.</p>
           <button onClick={() => refetch()} className="dc-btn dc-btn-ghost">
@@ -303,14 +303,14 @@ function HomeComponent() {
 
           {/* Simulated AR badge */}
           <div className="absolute top-6 left-6 z-20">
-            <span className="text-xs font-semibold bg-black/50 text-white/80 border border-white/20 rounded-full px-3 py-1 backdrop-blur-sm">
+            <span className="text-[11px] font-semibold uppercase tracking-widest bg-black/50 text-white/80 border border-white/20 rounded-full px-3 py-1 backdrop-blur-sm">
               Simulated AR
             </span>
           </div>
 
           <div className="absolute top-6 right-6 z-20">
             <button
-              className="dc-btn dc-btn-ghost bg-black/40 text-white border-white/20 backdrop-blur-md"
+              className="dc-btn dc-btn-ghost dc-btn-sm bg-black/40 text-white border-white/20 backdrop-blur-md"
               onClick={stopARMode}
             >
               Close AR
@@ -318,12 +318,12 @@ function HomeComponent() {
           </div>
           <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60 pointer-events-none" />
 
-          <div className="z-10 p-1 m-4 max-w-md animate-[dc-float_6s_ease-in-out_infinite]">
+          <div className="z-10 p-1 m-4 w-full max-w-[min(440px,calc(100vw-2rem))] animate-[dc-float_6s_ease-in-out_infinite]">
             <div className="dc-quote-card bg-black/40 backdrop-blur-xl border-white/10 shadow-2xl">
               <div className="dc-quote-tone text-white/90 border-white/20 bg-white/10">
                 {weatherInfo.toneLabel}
               </div>
-              <blockquote className="dc-quote-text !text-white !mb-5">
+              <blockquote className="dc-quote-text !text-white !mb-5 text-center">
                 &ldquo;{activeQuote.text}&rdquo;
               </blockquote>
               <p className="dc-quote-author text-white/70">— {activeQuote.author}</p>
@@ -352,20 +352,20 @@ function HomeComponent() {
   return (
     <>
       <div className={`min-h-full transition-colors duration-1000 ease-in-out ${weatherClass}`}>
-        <div className="container mx-auto max-w-md h-full flex flex-col p-6 space-y-8">
+        <div className="dc-container h-full flex flex-col py-6 space-y-10">
           {/* Weather badge + history link */}
-          <div className="flex items-center justify-between pt-2 animate-[dc-enter_600ms_ease_both]">
+          <div className="flex items-center justify-between gap-2 animate-[dc-enter_600ms_ease_both]">
             <Link
               to="/history"
-              className="dc-btn dc-btn-ghost !py-1.5 !px-3 text-xs gap-1"
+              className="dc-btn dc-btn-ghost dc-btn-sm gap-1 shrink-0"
               aria-label="View quote history"
             >
               <History className="h-3.5 w-3.5" />
               History
             </Link>
-            <div className="dc-weather-badge backdrop-blur-sm bg-background/30 border-foreground/10">
-              <Cloud className="h-3.5 w-3.5" />
-              <span>{weatherInfo.condition} · {Math.round(weatherInfo.temp)}°C</span>
+            <div className="dc-weather-badge backdrop-blur-sm bg-background/30 border-foreground/10 min-w-0">
+              <Cloud className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{weatherInfo.condition} · {Math.round(weatherInfo.temp)}°C</span>
             </div>
           </div>
 
@@ -380,14 +380,16 @@ function HomeComponent() {
               }
             >
               {/* Primary / Bonus label */}
-              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-4 text-center">
                 {quoteLabel}
               </p>
 
-              <div className="dc-quote-tone">{weatherInfo.toneLabel}</div>
+              <div className="flex justify-center mb-6">
+                <div className="dc-quote-tone !mb-0">{weatherInfo.toneLabel}</div>
+              </div>
 
               <blockquote
-                className="dc-quote-text"
+                className="dc-quote-text text-center"
                 aria-live="polite"
                 aria-atomic="true"
               >
@@ -412,7 +414,7 @@ function HomeComponent() {
           </div>
 
           {/* Actions */}
-          <div className="flex flex-col gap-4 pb-10 animate-[dc-enter_800ms_ease_both_400ms]">
+          <div className="flex flex-col gap-4 pb-12 animate-[dc-enter_800ms_ease_both_400ms]">
             <button
               onClick={startARMode}
               className="dc-btn dc-btn-primary w-full h-14 text-lg"
@@ -420,13 +422,13 @@ function HomeComponent() {
               <Camera className="mr-2 h-5 w-5" /> View in AR
             </button>
 
-            <div className="flex gap-3">
-              <button className="dc-btn dc-btn-ghost flex-1" onClick={handleShare}>
+            <div className="flex flex-wrap gap-2 sm:gap-3">
+              <button className="dc-btn dc-btn-ghost flex-1 dc-btn-sm" onClick={handleShare}>
                 <ExternalLink className="mr-2 h-4 w-4" /> Share
               </button>
 
               <button
-                className="dc-btn dc-btn-ghost flex-1"
+                className="dc-btn dc-btn-ghost flex-1 dc-btn-sm"
                 onClick={() => bonusMutation.mutate()}
                 disabled={bonusMutation.isPending}
                 aria-label="Get a bonus quote"
@@ -436,7 +438,7 @@ function HomeComponent() {
               </button>
 
               <button
-                className="dc-btn dc-btn-ghost flex-1"
+                className="dc-btn dc-btn-ghost flex-1 dc-btn-sm"
                 onClick={() => {
                   setCachedQuote(null);
                   setActiveQuote(null);
