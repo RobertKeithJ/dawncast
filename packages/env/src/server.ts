@@ -7,7 +7,8 @@ export const env = createEnv({
     DATABASE_URL: z.string().min(1),
     CORS_ORIGIN: z.url(),
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
-    GEMINI_API_KEY: z.string().min(1),
+    // Only required for the quote seeding script — not for the running server
+    GEMINI_API_KEY: z.string().min(1).optional(),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

@@ -3,6 +3,12 @@ node_modules
 .pnp
 .pnp.js
 
+# pnpm (not used — project uses Bun)
+pnpm-lock.yaml
+.pnpm-debug.log*
+
+# Bun (bun.lock MUST be committed — do not add it here)
+
 # Build outputs
 dist
 build
@@ -31,7 +37,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
-.pnpm-debug.log*
 
 # Turbo
 .turbo

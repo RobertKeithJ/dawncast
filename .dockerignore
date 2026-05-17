@@ -1,0 +1,35 @@
+# Frontend app — not needed in the server image
+apps/web
+
+# UI package — server-only image doesn't use frontend components
+packages/ui
+
+# Dev/tooling artifacts
+node_modules
+**/node_modules
+dist
+**/dist
+.turbo
+**/.turbo
+coverage
+**/coverage
+
+# Environment files — injected at runtime by Railway
+.env
+**/.env
+**/.env.local
+
+# CI/git/editor
+.git
+.github
+.gitignore
+.dockerignore
+
+# Playwright / test artifacts
+e2e
+playwright-report
+test-results
+
+# Docs
+*.md
+!README.md

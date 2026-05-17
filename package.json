@@ -17,9 +17,9 @@
     "db:studio": "bun run --filter @project-dailyquotes/db db:studio",
     "db:generate": "bun run --filter @project-dailyquotes/db db:generate",
     "db:migrate": "bun run --filter @project-dailyquotes/db db:migrate",
-    "lint": "echo 'No lint configured'",
-    "test": "echo 'No test configured'",
-    "test:e2e": "echo 'No e2e configured'"
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "test:e2e": "bunx playwright test"
   },
   "dependencies": {
     "@project-dailyquotes/env": "workspace:*",
@@ -40,5 +40,5 @@
     "typescript": "^5.7.0",
     "typescript-eslint": "^8.59.3"
   },
-  "packageManager": "bun@1.4.9"
+  "packageManager": "bun@1.3.14"
 }
