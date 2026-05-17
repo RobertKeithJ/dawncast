@@ -30,6 +30,7 @@ COPY --from=deps /app/node_modules ./node_modules
 
 # Copy only the source packages the server actually needs at runtime.
 # Intentionally excludes apps/web and packages/ui (frontend-only).
+COPY package.json bun.lock* bun.lockb*   ./
 COPY tsconfig.json                       ./
 COPY apps/server                         ./apps/server
 COPY packages/db                         ./packages/db
