@@ -46,7 +46,7 @@ function HistoryPage() {
                   </span>
                 </div>
                 <div className="dc-quote-tone mb-2">{entry.toneLabel}</div>
-                <blockquote className="text-base font-serif italic leading-relaxed text-foreground">
+                <blockquote className="text-lg font-quote italic leading-relaxed text-foreground">
                   &ldquo;{entry.text}&rdquo;
                 </blockquote>
                 <p className="text-sm text-muted-foreground mt-2">— {entry.author}</p>

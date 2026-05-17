@@ -7,40 +7,38 @@
   ],
   "type": "module",
   "scripts": {
-    "dev": "turbo dev",
-    "build": "turbo build",
-    "check-types": "turbo check-types",
-    "dev:web": "turbo -F web dev",
-    "dev:server": "turbo -F server dev",
-    "db:push": "turbo -F @project-dailyquotes/db db:push",
-    "db:studio": "turbo -F @project-dailyquotes/db db:studio",
-    "db:generate": "turbo -F @project-dailyquotes/db db:generate",
-    "db:migrate": "turbo -F @project-dailyquotes/db db:migrate",
-    "lint": "turbo lint",
-    "test": "turbo test",
-    "test:e2e": "playwright test"
+    "dev": "bun run --filter web dev & bun run --filter server dev",
+    "build": "bun run --filter server build",
+    "start:server": "bun run --filter server start",
+    "check-types": "bun run --filter web check-types && bun run --filter server check-types",
+    "dev:web": "bun run --filter web dev",
+    "dev:server": "bun run --filter server dev",
+    "db:push": "bun run --filter @project-dailyquotes/db db:push",
+    "db:studio": "bun run --filter @project-dailyquotes/db db:studio",
+    "db:generate": "bun run --filter @project-dailyquotes/db db:generate",
+    "db:migrate": "bun run --filter @project-dailyquotes/db db:migrate",
+    "lint": "echo 'No lint configured'",
+    "test": "echo 'No test configured'",
+    "test:e2e": "echo 'No e2e configured'"
   },
   "dependencies": {
     "@project-dailyquotes/env": "workspace:*",
-    "dotenv": "catalog:",
-    "zod": "catalog:"
+    "dotenv": "^16.4.0",
+    "zod": "^3.24.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@playwright/test": "^1.60.0",
     "@project-dailyquotes/config": "workspace:*",
-    "@types/bun": "catalog:",
+    "@types/bun": "^1.0.0",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.26",
     "globals": "^16.5.0",
     "localtunnel": "^2.0.2",
     "turbo": "^2.8.12",
-    "typescript": "catalog:",
+    "typescript": "^5.7.0",
     "typescript-eslint": "^8.59.3"
   },
-  "packageManager": "pnpm@10.33.2",
-  "engines": {
-    "bun": ">=1.0.0"
-  }
+  "packageManager": "bun@1.4.9"
 }

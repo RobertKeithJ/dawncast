@@ -18,15 +18,15 @@
   },
   "dependencies": {
     "@project-dailyquotes/env": "workspace:*",
-    "dotenv": "catalog:",
+    "dotenv": "^16.4.0",
     "drizzle-orm": "^0.45.1",
     "pg": "^8.17.1",
-    "zod": "catalog:"
+    "zod": "^3.24.0"
   },
   "devDependencies": {
     "@project-dailyquotes/config": "workspace:*",
     "@types/pg": "^8.16.0",
     "drizzle-kit": "^0.31.8",
-    "typescript": "catalog:"
+    "typescript": "^5.7.0"
   }
 }

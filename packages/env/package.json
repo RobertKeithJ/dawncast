@@ -9,12 +9,12 @@
   },
   "dependencies": {
     "@t3-oss/env-core": "^0.13.1",
-    "dotenv": "catalog:",
-    "zod": "catalog:"
+    "dotenv": "^16.4.0",
+    "zod": "^3.24.0"
   },
   "devDependencies": {
     "@project-dailyquotes/config": "workspace:*",
-    "@types/bun": "catalog:",
-    "typescript": "catalog:"
+    "@types/bun": "^1.0.0",
+    "typescript": "^5.7.0"
   }
 }

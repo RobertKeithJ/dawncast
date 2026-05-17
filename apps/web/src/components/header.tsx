@@ -50,7 +50,7 @@ export default function Header() {
 
   return (
     <header className="z-40 w-full animate-[dc-enter_400ms_ease_both]">
-      <div className="flex flex-row items-center justify-between px-6 py-4">
+      <div className="container mx-auto max-w-md flex flex-row items-center justify-between px-6 py-4">
         <nav className="flex items-center gap-4">
           <Link to="/" className="text-xl font-semibold tracking-[-0.03em] font-sans hover:opacity-70 transition-opacity">
             Dawncast
