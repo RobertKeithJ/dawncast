@@ -21,13 +21,31 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
-        name: "Daily Motivation AR",
-        short_name: "DailyQuotes",
+        name: "Dawncast",
+        short_name: "Dawncast",
         description: "Weather-aware motivational quotes with AR display",
         theme_color: "#0c0c0c",
         background_color: "#0c0c0c",
         display: "standalone",
         orientation: "portrait",
+        icons: [
+          {
+            src: "pwa-192x192.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
+          {
+            src: "pwa-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+          },
+          {
+            src: "maskable-icon-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
+          },
+        ],
       },
       workbox: {
         runtimeCaching: [

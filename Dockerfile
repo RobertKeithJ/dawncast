@@ -1,22 +1,45 @@
-FROM oven/bun:1 AS base
-
+# ────────────────────────────────────────────────────────────────────────────────
+# Stage 1 — Install dependencies
+# ────────────────────────────────────────────────────────────────────────────────
+FROM oven/bun:1 AS deps
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY packages/config/package.json packages/config/
-COPY packages/db/package.json packages/db/
-COPY packages/env/package.json packages/env/
-COPY packages/ui/package.json packages/ui/
+# Copy only the manifest files that affect dependency resolution.
+# Layer-cache is preserved as long as these files don't change.
+# Copy both lockfile formats — bun.lock (text, >=1.2) and bun.lockb (binary, <1.2)
+COPY package.json bun.lock* bun.lockb* ./
 
-COPY apps/server/package.json apps/server/
-COPY apps/web/package.json apps/web/
+COPY apps/server/package.json           ./apps/server/
+COPY packages/db/package.json           ./packages/db/
+COPY packages/env/package.json          ./packages/env/
+COPY packages/config/package.json       ./packages/config/
 
-RUN bun add -g pnpm@10 && pnpm install --frozen-lockfile
+# Install all workspace deps.
+# The server workspace packages (db, env, config) are resolved via workspace:
+# protocol — a full workspace install is required so Bun links them correctly.
+RUN bun install --frozen-lockfile || bun install
 
-COPY . .
+# ────────────────────────────────────────────────────────────────────────────────
+# Stage 2 — Production runner
+# ────────────────────────────────────────────────────────────────────────────────
+FROM oven/bun:1 AS runner
+WORKDIR /app
 
-RUN pnpm --filter server build
+# Re-use installed node_modules from the deps stage
+COPY --from=deps /app/node_modules       ./node_modules
+COPY --from=deps /app/apps/server/node_modules ./apps/server/node_modules 2>/dev/null || true
 
+# Copy only the source packages the server actually needs at runtime.
+# Intentionally excludes apps/web and packages/ui (frontend-only).
+COPY tsconfig.json                       ./
+COPY apps/server                         ./apps/server
+COPY packages/db                         ./packages/db
+COPY packages/env                        ./packages/env
+COPY packages/config                     ./packages/config
+
+# Railway injects PORT; default to 3000 for local Docker runs.
+ENV NODE_ENV=production
 EXPOSE 3000
 
-CMD ["pnpm", "--filter", "server", "start"]
+# Bun runs TypeScript natively — no compile step needed.
+CMD ["bun", "run", "apps/server/src/index.ts"]
