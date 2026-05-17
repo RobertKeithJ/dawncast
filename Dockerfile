@@ -40,5 +40,6 @@ COPY packages/config                     ./packages/config
 ENV NODE_ENV=production
 EXPOSE 3000
 
-# Bun runs TypeScript natively — no compile step needed.
-CMD ["bun", "run", "apps/server/src/index.ts"]
+RUN bun run build
+
+CMD ["bun", "run", "dist/index.mjs"]
