@@ -26,8 +26,7 @@ FROM oven/bun:1 AS runner
 WORKDIR /app
 
 # Re-use installed node_modules from the deps stage
-COPY --from=deps /app/node_modules       ./node_modules
-COPY --from=deps /app/apps/server/node_modules ./apps/server/node_modules 2>/dev/null || true
+COPY --from=deps /app/node_modules ./node_modules
 
 # Copy only the source packages the server actually needs at runtime.
 # Intentionally excludes apps/web and packages/ui (frontend-only).
