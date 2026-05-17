@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Download, X, AppWindow } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -12,63 +12,73 @@ import {
 import { Button } from "@project-dailyquotes/ui/components/button";
 import { usePwaInstall } from "@/hooks/use-pwa-install";
 
+const TOAST_ID = "pwa-install-toast";
+
 export function PwaInstallPrompt() {
-  const { canInstall, isMobile, install, dismiss } = usePwaInstall();
+  const { canInstall, isMobile, install, dismiss, reset } = usePwaInstall();
   const [open, setOpen] = useState(false);
+  const prevCanInstall = useRef(canInstall);
 
   useEffect(() => {
-    if (canInstall) {
-      if (isMobile) {
-        setOpen(true);
-      } else {
-        toast.promise(
-          new Promise<"installed">((resolve) => {
-            setTimeout(() => resolve("installed"), 3000);
-          }),
-          {
-            loading: "Checking for app...",
-            success: (
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <AppWindow className="h-5 w-5" />
-                  <div className="flex flex-col">
-                    <span className="font-medium">Install DailyQuotes</span>
-                    <span className="text-xs text-muted-foreground">
-                      Add to home screen for the best experience
-                    </span>
-                  </div>
-                </div>
-                <div className="flex gap-1">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      install();
-                    }}
-                  >
-                    Install
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      dismiss();
-                    }}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
+    if (canInstall && !isMobile) {
+      if (!prevCanInstall.current) {
+        toast(
+          <div className="flex items-center justify-between w-full gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 shrink-0">
+                <AppWindow className="h-5 w-5 text-primary" />
               </div>
-            ),
-            duration: 10000,
+              <div className="flex flex-col">
+                <span className="font-medium text-sm">Install DailyQuotes</span>
+                <span className="text-xs text-muted-foreground">
+                  Add to home screen for the best experience
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 shrink-0">
+              <Button
+                size="sm"
+                className="h-8 px-3"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  install();
+                }}
+              >
+                Install
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8 flex items-center justify-center"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  dismiss();
+                  toast.dismiss(TOAST_ID);
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>,
+          {
+            id: TOAST_ID,
+            duration: 15000,
             dismissible: false,
           }
         );
       }
+    } else if (!canInstall) {
+      toast.dismiss(TOAST_ID);
     }
+
+    prevCanInstall.current = canInstall;
   }, [canInstall, isMobile, install, dismiss]);
+
+  useEffect(() => {
+    if (canInstall && isMobile) {
+      setOpen(true);
+    }
+  }, [canInstall, isMobile]);
 
   if (!canInstall) return null;
 
