@@ -28,8 +28,8 @@
     },
     "devDependencies": {
         "@project-dailyquotes/config": "workspace:*",
-        "@types/react": "^19.2.10",
-        "@types/react-dom": "^19.2.14",
+        "@types/react": "^19.0.0",
+        "@types/react-dom": "^19.0.0",
         "tailwindcss": "^4.1.18",
         "typescript": "^5.7.0"
     }
