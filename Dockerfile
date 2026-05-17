@@ -27,6 +27,10 @@ WORKDIR /app
 
 # Re-use installed node_modules from the deps stage
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/server ./apps/server
+COPY --from=deps /app/packages/db ./packages/db
+COPY --from=deps /app/packages/env ./packages/env
+COPY --from=deps /app/packages/config ./packages/config
 
 # Copy only the source packages the server actually needs at runtime.
 # Intentionally excludes apps/web and packages/ui (frontend-only).
@@ -43,4 +47,4 @@ EXPOSE 3000
 
 RUN bun run build
 
-CMD ["bun", "run", "dist/index.mjs"]
+CMD ["bun", "run", "start:server"]
