@@ -81,8 +81,8 @@ Set this environment variable in Vercel:
 
 ## Architecture Notes
 
-- Server uses Bun's hot-reload in dev (`bun run --hot src/index.ts`)
-- Server runs TypeScript natively in production (no compile step in Docker)
+- Server uses Bun's hot-reload in dev (`bun run dev:server`)
+- Server builds with tsdown (`bun run build` → `dist/index.mjs`), production uses `bun run start:server`
 - Web uses Vite with TanStack Router (file-based routing in `apps/web/src/routes/`)
 - Shared UI components exported from `packages/ui/src/components/*`
 - Lint: ESLint 9 flat config at root (`eslint.config.js`)
