@@ -61,10 +61,10 @@ function HomeComponent() {
           setLocationError(false);
         },
         (err) => {
-          console.warn("Geolocation error:", err);
+          console.warn("Geolocation error:", err.message, "code:", err.code);
           setLocationError(true);
         },
-        { timeout: 5000, maximumAge: 0 },
+        { timeout: 15000, maximumAge: 0, enableHighAccuracy: false },
       );
     } else {
       setLocationError(true);
@@ -238,8 +238,8 @@ function HomeComponent() {
       <div className="dc-container h-full flex flex-col items-center justify-center py-6 text-center transition-colors duration-700">
         <div className="w-full max-w-sm animate-[dc-enter_500ms_ease_both]">
           <MapPin className="h-12 w-12 text-primary mx-auto mb-6" />
-          <h2 className="text-2xl font-semibold mb-2">Location Access Denied</h2>
-          <p className="text-muted-foreground mb-8">No worries — tell us your city instead.</p>
+          <h2 className="text-2xl font-semibold mb-2">Where's your location?</h2>
+          <p className="text-muted-foreground mb-8">Tell us your city so we can bring you a weather-matched quote.</p>
           <form
             className="dc-location-field w-full"
             onSubmit={(e) => {
@@ -251,6 +251,29 @@ function HomeComponent() {
             <input name="city" placeholder="Davao City" required />
             <button type="submit" className="dc-btn dc-btn-primary">Search</button>
           </form>
+          <button
+            className="dc-btn dc-btn-ghost mt-4 text-xs"
+            onClick={() => {
+              setLocationError(false);
+              setTimeout(() => {
+                if ("geolocation" in navigator) {
+                  navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                      setLocation({ lat: pos.coords.latitude.toString(), lon: pos.coords.longitude.toString() });
+                      setLocationError(false);
+                    },
+                    () => setLocationError(true),
+                    { timeout: 15000, maximumAge: 0, enableHighAccuracy: false },
+                  );
+                } else {
+                  setLocationError(true);
+                }
+              }, 50);
+            }}
+          >
+            <RefreshCcw className="mr-2 h-3 w-3" />
+            Try auto-detect again
+          </button>
         </div>
       </div>
     );
