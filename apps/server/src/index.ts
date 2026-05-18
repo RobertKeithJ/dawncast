@@ -97,11 +97,11 @@ const app = new Elysia()
     },
     {
       body: t.Object({
-        lat: t.Optional(t.Number()),
-        lon: t.Optional(t.Number()),
-        city: t.Optional(t.String()),
-        subscriptionId: t.Optional(t.String()),
-        language: t.Optional(t.String()),
+        lat: t.Optional(t.Union([t.Number(), t.Null()])),
+        lon: t.Optional(t.Union([t.Number(), t.Null()])),
+        city: t.Optional(t.Union([t.String(), t.Null()])),
+        subscriptionId: t.Optional(t.Union([t.String(), t.Null()])),
+        language: t.Optional(t.Union([t.String(), t.Null()])),
       }),
     },
   )
@@ -166,8 +166,8 @@ const app = new Elysia()
           p256dh: t.String(),
           auth: t.String(),
         }),
-        timezone: t.Optional(t.String()),
-        notifyAt: t.Optional(t.String()),
+        timezone: t.Optional(t.Union([t.String(), t.Null()])),
+        notifyAt: t.Optional(t.Union([t.String(), t.Null()])),
       }),
     },
   )
@@ -239,16 +239,16 @@ const app = new Elysia()
 
       return { success: true };
     },
-    {
+{
       body: t.Object({
         subscriptionId: t.String(),
-        notifyAt: t.Optional(t.String()),
-        timezone: t.Optional(t.String()),
+        notifyAt: t.Optional(t.Union([t.String(), t.Null()])),
+        timezone: t.Optional(t.Union([t.String(), t.Null()])),
       }),
     },
   );
 
-const port = Number(process.env.PORT ?? 3000);
+  const port = Number(process.env.PORT ?? 3000);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
