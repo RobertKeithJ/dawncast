@@ -1,14 +1,52 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Cloud, Calendar } from "lucide-react";
 import { getHistory } from "@/lib/storage";
 import { getWeatherClass } from "@/lib/functions";
+import { api } from "@/lib/api";
 
 export const Route = createFileRoute("/history")({
   component: HistoryPage,
 });
 
+interface ServerHistoryEntry {
+  quoteId: string;
+  quoteText: string;
+  author: string;
+  servedDate: string;
+  weatherCondition: string;
+  toneLabel: string;
+  isBonus: boolean;
+}
+
 function HistoryPage() {
-  const history = getHistory();
+  const localHistory = getHistory();
+
+  const { data: serverHistory } = useQuery({
+    queryKey: ["history"],
+    queryFn: async () => {
+      const res = await api.api.quote.history.get({ $query: { limit: "60" } });
+      if (res.error) return null;
+      return res.data?.entries ?? null;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const history = serverHistory && serverHistory.length > 0
+    ? serverHistory.map(
+        (entry: ServerHistoryEntry) => ({
+          id: entry.quoteId,
+          text: entry.quoteText,
+          author: entry.author,
+          servedDate: entry.servedDate,
+          toneId: entry.toneLabel.replace(/ /g, "_"),
+          toneLabel: entry.toneLabel,
+          weatherCode: parseInt(entry.weatherCondition.replace("Code ", "")) || 0,
+          weatherCondition: entry.weatherCondition.replace("Code ", ""),
+          tempCelsius: 0,
+        }),
+      )
+    : localHistory;
 
   return (
     <div className="min-h-full bg-background transition-colors duration-700">

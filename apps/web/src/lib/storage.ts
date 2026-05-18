@@ -76,7 +76,6 @@ export function getHistory(): StoredQuote[] {
 export function appendHistory(q: StoredQuote): void {
   try {
     const history = getHistory();
-    // Avoid duplicates for the same date+id
     const exists = history.some(
       (h) => h.id === q.id && h.servedDate === q.servedDate,
     );
@@ -86,6 +85,31 @@ export function appendHistory(q: StoredQuote): void {
   } catch {
     // ignore
   }
+}
+
+/** Add a bonus quote to history with full data. */
+export function addBonusToHistory(data: {
+  id: string;
+  text: string;
+  author: string;
+  servedDate: string;
+  toneId: string;
+  toneLabel: string;
+  weatherCode: number;
+  weatherCondition: string;
+  tempCelsius: number;
+}): void {
+  appendHistory({
+    id: data.id,
+    text: data.text,
+    author: data.author,
+    servedDate: data.servedDate,
+    toneId: data.toneId,
+    toneLabel: data.toneLabel,
+    weatherCode: data.weatherCode,
+    weatherCondition: data.weatherCondition,
+    tempCelsius: data.tempCelsius,
+  });
 }
 
 /** Track a quote ID as having been seen for the day. */

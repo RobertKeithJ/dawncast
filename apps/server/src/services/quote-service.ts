@@ -9,6 +9,7 @@ import {
   DEFAULT_QUOTE_TEXT,
   DEFAULT_QUOTE_AUTHOR,
 } from "../constants";
+import { getWeatherConditionLabel } from "../functions";
 import type { ZenQuote } from "../types";
 
 export interface QuoteResult {
@@ -174,7 +175,7 @@ export async function getQuoteHistory(
     quoteText: r.quoteText,
     author: r.author,
     servedDate: r.servedDate,
-    weatherCondition: `Code ${r.weatherCode}`,
+    weatherCondition: getWeatherConditionLabel(r.weatherCode),
     toneLabel: r.toneCategoryId.replace(/_/g, " "),
     isBonus: r.isBonus,
   }));
