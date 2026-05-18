@@ -5,6 +5,7 @@
 
 const DAILY_QUOTE_KEY = "dawncast:daily_quote";
 const HISTORY_KEY = "dawncast:history";
+const SEEN_QUOTE_IDS_KEY = "dawncast:seen_quote_ids";
 const HISTORY_MAX = 60;
 
 export interface StoredQuote {
@@ -36,11 +37,12 @@ export function getDailyQuote(): StoredQuote | null {
     if (!raw) return null;
     const stored = JSON.parse(raw) as StoredQuote;
     if (stored.servedDate !== getTodayString()) {
-      // Different day — archive to history and clear
+      // Different day — archive to history, clear daily cache and seen IDs
       if (stored.id && stored.id !== "fallback") {
         appendHistory(stored);
       }
       localStorage.removeItem(DAILY_QUOTE_KEY);
+      clearSeenQuoteIds();
       return null;
     }
     return stored;
@@ -84,4 +86,42 @@ export function appendHistory(q: StoredQuote): void {
   } catch {
     // ignore
   }
+}
+
+/** Track a quote ID as having been seen for the day. */
+export function markQuoteSeen(id: string): void {
+  try {
+    const seenIds = getSeenQuoteIds();
+    if (!seenIds.includes(id)) {
+      localStorage.setItem(
+        SEEN_QUOTE_IDS_KEY,
+        JSON.stringify([id, ...seenIds]),
+      );
+    }
+  } catch {
+    // ignore
+  }
+}
+
+/** Get all quote IDs seen today. */
+export function getSeenQuoteIds(): string[] {
+  try {
+    const raw = localStorage.getItem(SEEN_QUOTE_IDS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((v) => typeof v === "string");
+  } catch {
+    return [];
+  }
+}
+
+/** Check if a quote ID was already seen today. */
+export function isQuoteSeen(id: string): boolean {
+  return getSeenQuoteIds().includes(id);
+}
+
+/** Clear seen quote IDs (called when a new day starts). */
+export function clearSeenQuoteIds(): void {
+  localStorage.removeItem(SEEN_QUOTE_IDS_KEY);
 }

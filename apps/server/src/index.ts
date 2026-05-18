@@ -81,6 +81,7 @@ const app = new Elysia()
         subscriptionId: body.subscriptionId ?? null,
         weather,
         language: body.language ?? "en",
+        extraExcludeIds: body.excludeIds ?? [],
       });
 
       return {
@@ -102,6 +103,7 @@ const app = new Elysia()
         city: t.Optional(t.Union([t.String(), t.Null()])),
         subscriptionId: t.Optional(t.Union([t.String(), t.Null()])),
         language: t.Optional(t.Union([t.String(), t.Null()])),
+        excludeIds: t.Optional(t.Array(t.String())),
       }),
     },
   )
