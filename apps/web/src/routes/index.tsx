@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ShareModal } from "@/components/share-modal";
+import { Spinner } from "@dawncast/ui/components/spinner";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
@@ -217,8 +218,9 @@ function HomeComponent() {
   if (!cachedQuote && !location && !cityQuery && !locationError) {
     return (
       <div className="dc-container h-full flex flex-col items-center justify-center py-6 transition-colors duration-700">
-        <div className="dc-loading animate-[dc-enter_500ms_ease_both]">
-          Reading your sky…
+        <div className="flex flex-col items-center gap-4 animate-[dc-enter_500ms_ease_both]">
+          <Spinner className="size-8" />
+          <span className="text-muted-foreground">Reading your sky…</span>
         </div>
         <button
           className="dc-btn dc-btn-ghost mt-8 animate-[dc-enter_500ms_ease_both_200ms]"
@@ -258,8 +260,9 @@ function HomeComponent() {
   if (isLoading && !cachedQuote) {
     return (
       <div className="dc-container h-full flex flex-col items-center justify-center py-6 transition-colors duration-700">
-        <div className="dc-loading animate-[dc-enter_500ms_ease_both]">
-          Gathering your daily quote…
+        <div className="flex flex-col items-center gap-4 animate-[dc-enter_500ms_ease_both]">
+          <Spinner className="size-8" />
+          <span className="text-muted-foreground">Gathering your daily quote…</span>
         </div>
       </div>
     );
