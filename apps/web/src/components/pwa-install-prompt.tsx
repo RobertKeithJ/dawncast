@@ -1,5 +1,4 @@
-import React from "react";
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { X, AppWindow, SquareArrowUpRight } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -29,14 +28,19 @@ export function PwaInstallPrompt() {
     dismissOpenInSafari,
   } = usePwaInstall();
 
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
   const prevCanInstall = useRef(canInstall);
   const prevIosHint = useRef(showIosHint);
   const prevOpenInSafari = useRef(showOpenInSafari);
-  const isMobile = useRef(
-    typeof window !== "undefined"
-      ? window.matchMedia("(max-width: 768px)").matches
-      : false
-  );
 
   useEffect(() => {
     if (showOpenInSafari && !prevOpenInSafari.current) {
@@ -120,7 +124,7 @@ export function PwaInstallPrompt() {
   }, [showIosHint, dismissIOSHint]);
 
   useEffect(() => {
-    if (canInstall && !isMobile.current) {
+    if (canInstall && !isMobile) {
       if (!prevCanInstall.current) {
         toast(
           <div className="flex items-center justify-between w-full gap-4">
@@ -190,14 +194,15 @@ export function PwaInstallPrompt() {
     }
 
     prevCanInstall.current = canInstall;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canInstall, install, dismiss]);
 
   if (!canInstall) return null;
 
-  if (isMobile.current) {
+  if (isMobile) {
     return (
       <Sheet open onOpenChange={() => {}}>
-        <SheetContent side="bottom" className="pb-8">
+        <SheetContent side="bottom" className="pb-[max(1.5rem,env(safe-area-inset-bottom))]">
           <SheetHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10">

@@ -264,12 +264,12 @@ enum WMOWeatherCode {
 ### Client-Side Storage Types
 
 ```typescript
-// LocalStorage keys
+// LocalStorage keys (prefixed with "dawncast:")
 enum StorageKey {
-  DailyQuote = "dq_daily_quote",
-  QuoteHistory = "dq_history",
-  SubscriptionId = "dq_subscription_id",
-  Theme = "theme",
+  DailyQuote = "dawncast:daily_quote",
+  QuoteHistory = "dawncast:history",
+  SubscriptionId = "dawncast:subscription_id",
+  Theme = "dawncast:theme",
 }
 
 // Cached daily quote in localStorage

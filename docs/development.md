@@ -2,21 +2,21 @@
 
 ## Prerequisites
 
-- **Runtime:** Bun (configured as packageManager)
-- **Package Manager:** pnpm v10.33.2
-- **Database:** PostgreSQL
+- **Runtime:** Bun ≥ 1.3
+- **Package Manager:** Bun (workspace monorepo)
+- **Database:** PostgreSQL (Supabase or any Postgres provider)
 
 ## Quick Start
 
 ```bash
 # Install dependencies
-pnpm install
+bun install
 
 # Setup database (ensure PostgreSQL is running)
-pnpm run db:push
+bun run db:push
 
-# Start development
-pnpm run dev
+# Start development (both web + server)
+bun run dev
 ```
 
 ## Project Structure
@@ -26,33 +26,35 @@ pnpm run dev
 ```
 apps/web/src/
 ├── components/          # React components
-│   ├── header.tsx      # App header with nav
-│   ├── quote-card.tsx  # Quote display component
-│   ├── weather-display.tsx
-│   └── ...
+│   ├── header.tsx      # App header with nav + notifications bell
+│   ├── share-modal.tsx # Native/share modal for quote sharing
+│   ├── pwa-install-prompt.tsx # PWA install + iOS hint toasts
+│   └── safari-share-icon.tsx # Inline Safari share icon SVG
+├── hooks/              # Custom React hooks
+│   └── use-pwa-install.ts  # PWA install state machine
+├── lib/                # Client utilities
+│   ├── api.ts          # Eden Treaty client (@dawncast/env/web)
+│   ├── storage.ts     # localStorage helpers (daily quote cache)
+│   ├── functions.ts   # Weather class mapping, date formatting
+│   └── install-utils.ts # iOS Safari / standalone detection
 ├── routes/             # TanStack Router file-based routing
-│   ├── index.tsx      # Home route
-│   ├── history.tsx   # Quote history
-│   └── settings.tsx  # User preferences
-├── lib/               # Client utilities
-│   ├── api.ts        # Eden Treaty client
-│   ├── storage.ts    # localStorage helpers
-│   └── functions.ts  # Utility functions
-├── hooks/             # Custom React hooks
-└── main.tsx          # React entry point
+│   ├── __root.tsx      # Root layout (ThemeProvider, Toaster, PwaInstallPrompt)
+│   ├── index.tsx      # Home route (geolocation → quote display → AR mode)
+│   └── history.tsx    # Quote history page
+└── index.css           # Global styles + CSS custom properties (dc-* tokens)
 ```
 
 ### Backend (apps/server)
 
 ```
 apps/server/src/
-├── index.ts           # Main server + API routes
-├── functions.ts       # Weather-to-tone mapping
-├── constants.ts       # API URLs, defaults
+├── index.ts           # Main server + all API routes (Elysia)
 ├── services/          # Business logic
-│   ├── weather-service.ts      # Weather API + caching
-│   ├── quote-service.ts        # Quote database ops
-│   └── daily-quote-service.ts  # Quote orchestration
+│   ├── weather-service.ts      # Open-Meteo API + DB cache
+│   ├── quote-service.ts       # Quote DB operations
+│   └── daily-quote-service.ts  # Quote orchestration + no-repeat logic
+├── functions.ts       # Weather-to-tone mapping
+├── constants.ts       # API URLs, default values, condition labels
 └── types.ts           # TypeScript types
 ```
 
@@ -60,26 +62,28 @@ apps/server/src/
 
 | Command | Description |
 |---------|-------------|
-| `pnpm run dev` | Start both web (3001) and server (3000) |
-| `pnpm run dev:web` | Frontend only with HMR |
-| `pnpm run dev:server` | Backend only with hot reload |
-| `pnpm run build` | Build server to dist/ |
-| `pnpm run check-types` | TypeScript type checking |
+| `bun run dev` | Start both web (3001) and server (3000) |
+| `bun run dev:web` | Frontend only with HMR |
+| `bun run dev:server` | Backend only with hot reload |
+| `bun run build` | Build server to `dist/` |
+| `bun run check-types` | TypeScript type checking |
+| `bun run lint` | ESLint across all apps |
+| `bun run test` | Vitest unit tests |
 
 ## Database Commands
 
 | Command | Description |
 |---------|-------------|
-| `pnpm run db:push` | Push schema to database |
-| `pnpm run db:generate` | Generate Drizzle client |
-| `pnpm run db:migrate` | Run pending migrations |
-| `pnpm run db:studio` | Open Drizzle Studio UI |
+| `bun run db:push` | Push schema to database |
+| `bun run db:generate` | Generate Drizzle migrations |
+| `bun run db:migrate` | Run pending migrations |
+| `bun run db:studio` | Open Drizzle Studio UI |
 
 ## Seeding Quotes
 
 ```bash
 # Requires GEMINI_API_KEY in apps/server/.env
-pnpm run seed:quotes
+bun run --filter server seed:quotes
 ```
 
 This script:
@@ -96,21 +100,23 @@ VITE_SERVER_URL=http://localhost:3000
 
 ### apps/server/.env
 ```
+DATABASE_URL=postgresql://user:pass@localhost:5432/db
 CORS_ORIGIN=http://localhost:3001
-DATABASE_URL=postgresql://user:pass@localhost:5432/dailyquotes
-DIRECT_URL=postgresql://user:pass@localhost:5432/dailyquotes
-GEMINI_API_KEY=your_api_key_here
+NODE_ENV=development
+# GEMINI_API_KEY=your_api_key_here  # only for seeding
 ```
+
+Copy `.env.example` files for each app as a starting point.
 
 ## PWA Development
 
 ```bash
-# Generate PWA icons (after adding icon files)
+# Generate PWA icons (after adding icon files to public/)
 cd apps/web
-pnpm run generate-pwa-assets
+bun run generate-pwa-assets
 ```
 
-The PWA config is in `apps/web/vite.config.ts`.
+The PWA config is in `apps/web/vite.config.ts`. The manifest is auto-generated by `vite-plugin-pwa` with icons from `public/` directory.
 
 ## Hot Reload Behavior
 
@@ -120,13 +126,33 @@ The PWA config is in `apps/web/vite.config.ts`.
 ## Key Patterns
 
 ### Deterministic Quote Selection
-Same user + same day + same weather tone = same quote (stable hash)
+Same user + same day + same weather tone = same quote (stable hash-based selection per subscription/day).
 
 ### Weather Caching
-- 60-minute TTL on weather_cache table
+- 60-minute TTL on `weather_cache` table
 - Reduces Open-Meteo API calls
-- Key: `(latitude, longitude)`
+- Key: rounded `(latitude, longitude)` to 2 decimal places (~1.1 km grid)
 
 ### No-Repeat Window
-- 30-day dedup via delivery_log query
-- Same quote won't repeat within 30 days
+- 30-day dedup via `delivery_log` query
+- Same quote won't repeat within 30 days for the same subscription
+
+### PWA Install Flow
+- Android/Chrome: `beforeinstallprompt` event captured → Sonner toast after quote renders
+- iOS Safari: Custom hint toast with inline Safari share icon SVG
+- In-app browsers: "Open in Safari" notice
+- Dismissal: 3-day snooze. After 3 dismissals → permanent suppression.
+- Post-install: `appinstalled` event shows 4s confirmation toast
+
+### External APIs (no API keys required)
+- **Open-Meteo Geocoding:** `https://geocoding-api.open-meteo.com/v1/search`
+- **Open-Meteo Forecast:** `https://api.open-meteo.com/v1/forecast`
+- **ZenQuotes fallback:** `https://zenquotes.io/api/random`
+
+## Responsive / Safe Area Handling
+
+The app uses `viewport-fit=cover` and CSS `env(safe-area-inset-*)` to handle notched devices:
+- Header: `pt-[env(safe-area-inset-top)]`
+- Mobile bottom sheets: `pb-[max(1.5rem,env(safe-area-inset-bottom))]`
+- AR mode overlay: `bottom-[max(2rem,env(safe-area-inset-bottom))]`
+- All interactive touch targets are ≥ 44×44px

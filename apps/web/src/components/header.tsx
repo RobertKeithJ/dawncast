@@ -49,7 +49,7 @@ export default function Header() {
   };
 
   return (
-    <header className="z-40 w-full animate-[dc-enter_400ms_ease_both]">
+    <header className="z-40 w-full animate-[dc-enter_400ms_ease_both] pt-[env(safe-area-inset-top)]">
       <div className="dc-container flex flex-row items-center justify-between py-4">
         <nav className="flex items-center gap-4">
           <Link to="/" className="text-xl font-semibold tracking-[-0.03em] font-sans hover:opacity-70 transition-opacity">
@@ -58,7 +58,7 @@ export default function Header() {
         </nav>
         <div className="flex items-center gap-2">
           <button
-            className="dc-btn dc-btn-ghost dc-btn-icon"
+            className="dc-btn dc-btn-ghost dc-btn-icon h-11 w-11 flex items-center justify-center"
             onClick={requestNotificationPermission}
             aria-label="Enable notifications"
           >
