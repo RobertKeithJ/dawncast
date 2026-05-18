@@ -96,6 +96,7 @@ export function PwaInstallPrompt() {
             id: TOAST_ID,
             duration: Infinity,
             dismissible: false,
+            onDismiss: () => dismiss(),
           }
         );
       }

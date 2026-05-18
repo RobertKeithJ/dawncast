@@ -51,7 +51,25 @@ function RootComponent() {
             <Header />
             <Outlet />
           </div>
-          <Toaster richColors />
+          <Toaster
+            position="bottom-right"
+            expand={false}
+            richColors
+            toastOptions={{
+              unstyled: true,
+              classNames: {
+                toast: [
+                  "flex w-full gap-3 items-center p-4 rounded-2xl border bg-background/95 shadow-xl",
+                  "backdrop-blur-sm text-foreground",
+                  "border-border text-foreground",
+                  "group-[.toast]:border group-[.toast]:border-border",
+                  "group-[.toast]:shadow-xl",
+                ].join(" "),
+                success: "border-success/30 bg-success/10 text-success",
+                error: "border-destructive/30 bg-destructive/10 text-destructive",
+              },
+            }}
+          />
           <PwaInstallPrompt />
         </ThemeProvider>
       </QueryClientProvider>
