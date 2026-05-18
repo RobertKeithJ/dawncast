@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { toast } from "sonner";
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -15,6 +16,7 @@ const DISMISS_COUNT_KEY = "dawncast_install_dismiss_count";
 const IOS_HINT_KEY = "dawncast_ios_hint_shown";
 const SNOOZE_DURATION_MS = 3 * 24 * 60 * 60 * 1000;
 const MAX_DISMISS_COUNT = 3;
+const POST_INSTALL_TOAST_ID = "pwa-installed-toast";
 
 export function usePwaInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -96,6 +98,10 @@ export function usePwaInstall() {
       try {
         localStorage.setItem(PERMANENT_KEY, "true");
       } catch (_err) { /* localStorage blocked */ }
+      toast.success("Dawncast added to your home screen", {
+        id: POST_INSTALL_TOAST_ID,
+        duration: 4000,
+      });
     };
 
     window.addEventListener("appinstalled", handleAppInstalled);

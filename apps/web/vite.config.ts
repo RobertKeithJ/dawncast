@@ -24,10 +24,14 @@ export default defineConfig({
         name: "Dawncast",
         short_name: "Dawncast",
         description: "Weather-aware motivational quotes with AR display",
+        start_url: "/",
+        scope: "/",
         theme_color: "#0c0c0c",
         background_color: "#0c0c0c",
         display: "standalone",
         orientation: "portrait",
+        categories: ["lifestyle", "weather"],
+        prefer_related_applications: false,
         icons: [
           {
             src: "pwa-192x192.png",
