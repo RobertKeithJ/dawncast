@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import React, { useState, useEffect, useCallback } from "react";
 import { api } from "@/lib/api";
 import { getWeatherClass } from "@/lib/functions";
@@ -43,6 +43,9 @@ function HomeComponent() {
   const [shareOpen, setShareOpen] = useState(false);
   const [activeQuote, setActiveQuote] = useState<QuoteDisplay | null>(null);
   const [cachedQuote, setCachedQuote] = useState<StoredQuote | null>(null);
+  const queryClient = useQueryClient();
+
+  const queryKey = ["daily-quote", location, cityQuery] as const;
 
   // Check localStorage for today's quote on mount
   useEffect(() => {
@@ -74,8 +77,8 @@ function HomeComponent() {
   // Only fetch from API if we have no cached quote for today
   const shouldFetchFromAPI = !cachedQuote && (location !== null || cityQuery !== null);
 
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["daily-quote", location, cityQuery],
+  const { data, error } = useQuery({
+    queryKey,
     queryFn: async () => {
       const queryParams: Record<string, string> = {};
       if (cityQuery) {
@@ -89,6 +92,7 @@ function HomeComponent() {
       return res.data;
     },
     enabled: shouldFetchFromAPI,
+    staleTime: 0,
   });
 
   // When fresh API data arrives, cache it and set the active quote
@@ -279,25 +283,16 @@ function HomeComponent() {
     );
   }
 
-  // ── Fetching from API ──────────────────────────────────────────
-  if (isLoading && !cachedQuote) {
-    return (
-      <div className="dc-container h-full flex flex-col items-center justify-center py-6 transition-colors duration-700">
-        <div className="flex flex-col items-center gap-4 animate-[dc-enter_500ms_ease_both]">
-          <Spinner className="size-8" />
-          <span className="text-muted-foreground">Gathering your daily quote…</span>
-        </div>
-      </div>
-    );
-  }
-
   // ── API Error with no cache ────────────────────────────────────
   if (error && !cachedQuote && !data) {
     return (
       <div className="dc-container h-full flex flex-col items-center justify-center py-6 text-center transition-colors duration-700">
         <div className="animate-[dc-enter_500ms_ease_both]">
           <p className="text-destructive mb-6 font-medium">Failed to fetch the quote.</p>
-          <button onClick={() => refetch()} className="dc-btn dc-btn-ghost">
+          <button
+            onClick={() => queryClient.invalidateQueries({ queryKey })}
+            className="dc-btn dc-btn-ghost"
+          >
             <RefreshCcw className="mr-2 h-4 w-4" /> Try Again
           </button>
         </div>
@@ -305,11 +300,20 @@ function HomeComponent() {
     );
   }
 
-  // Guard: we need at least an active quote by this point
-  if (!activeQuote || !weatherInfo) return null;
+  // Must have at least one source for the quote
+  if (!activeQuote && !data) return null;
+  if (!weatherInfo) return null;
+
+  const quoteToDisplay = activeQuote ?? (data ? {
+    id: data.quote.id,
+    text: data.quote.text,
+    author: data.quote.author,
+    isPrimary: true,
+    isBonus: false,
+  } : null);
 
   const weatherClass = getWeatherClass(weatherInfo.condition);
-  const quoteLabel = activeQuote.isBonus ? "Bonus Quote" : "Your quote for today";
+  const quoteLabel = quoteToDisplay?.isBonus ? "Bonus Quote" : "Your quote for today";
 
   // ── AR Mode ────────────────────────────────────────────────────
   if (isARMode) {
@@ -349,9 +353,9 @@ function HomeComponent() {
                 {weatherInfo.toneLabel}
               </div>
               <blockquote className="dc-quote-text !text-white !mb-5 text-center">
-                &ldquo;{activeQuote.text}&rdquo;
+                &ldquo;{quoteToDisplay?.text}&rdquo;
               </blockquote>
-              <p className="dc-quote-author text-white/70">— {activeQuote.author}</p>
+              <p className="dc-quote-author text-white/70">— {quoteToDisplay?.author}</p>
             </div>
           </div>
 
@@ -364,128 +368,128 @@ function HomeComponent() {
 
         {shareOpen && (
           <ShareModal
-            text={activeQuote.text}
-            author={activeQuote.author}
+            text={quoteToDisplay?.text ?? ""}
+            author={quoteToDisplay?.author ?? ""}
             onClose={() => setShareOpen(false)}
           />
-        )}
-      </>
-    );
-  }
-
-  // ── Main View ──────────────────────────────────────────────────
-  return (
-    <>
-      <div className={`min-h-full transition-colors duration-1000 ease-in-out ${weatherClass}`}>
-        <div className="dc-container h-full flex flex-col py-6 space-y-10">
-          {/* Weather badge + history link */}
-          <div className="flex items-center justify-between gap-2 animate-[dc-enter_600ms_ease_both]">
-            <Link
-              to="/history"
-              className="dc-btn dc-btn-ghost dc-btn-sm gap-1 shrink-0"
-              aria-label="View quote history"
-            >
-              <History className="h-3.5 w-3.5" />
-              History
-            </Link>
-            <div className="dc-weather-badge backdrop-blur-sm bg-background/30 border-foreground/10 min-w-0">
-              <Cloud className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">{weatherInfo.condition} · {Math.round(weatherInfo.temp)}°C</span>
-            </div>
-          </div>
-
-          {/* Quote card */}
-          <div className="flex-1 flex flex-col items-center justify-center animate-[dc-enter_800ms_ease_both_200ms]">
-            <div
-              className="dc-quote-card w-full shadow-xl"
-              style={
-                {
-                  "--_glow-color": `var(--weather-${weatherClass.replace("weather-", "")}-glow)`,
-                } as React.CSSProperties & Record<string, string>
-              }
-            >
-              {/* Primary / Bonus label */}
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-4 text-center">
-                {quoteLabel}
-              </p>
-
-              <div className="flex justify-center mb-6">
-                <div className="dc-quote-tone !mb-0">{weatherInfo.toneLabel}</div>
-              </div>
-
-              <blockquote
-                className="dc-quote-text text-center"
-                aria-live="polite"
-                aria-atomic="true"
-              >
-                &ldquo;{activeQuote.text}&rdquo;
-              </blockquote>
-              <p className="dc-quote-author">— {activeQuote.author}</p>
-
-              <div className="dc-quote-footer">
-                <span>
-                  {new Date().toLocaleDateString(undefined, {
-                    weekday: "long",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </span>
-                <span className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
-                  {cityQuery ?? "Near you"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex flex-col gap-4 pb-12 animate-[dc-enter_800ms_ease_both_400ms]">
-            <button
-              onClick={startARMode}
-              className="dc-btn dc-btn-primary w-full h-14 text-lg"
-            >
-              <Camera className="mr-2 h-5 w-5" /> View in AR
-            </button>
-
-            <div className="flex flex-wrap gap-2 sm:gap-3">
-              <button className="dc-btn dc-btn-ghost flex-1 dc-btn-sm" onClick={handleShare}>
-                <ExternalLink className="mr-2 h-4 w-4" /> Share
-              </button>
-
-              <button
-                className="dc-btn dc-btn-ghost flex-1 dc-btn-sm"
-                onClick={() => bonusMutation.mutate()}
-                disabled={bonusMutation.isPending}
-                aria-label="Get a bonus quote"
-              >
-                <Sparkles className="mr-2 h-4 w-4" />
-                {bonusMutation.isPending ? "…" : "Another"}
-              </button>
-
-              <button
-                className="dc-btn dc-btn-ghost flex-1 dc-btn-sm"
-                onClick={() => {
-                  setCachedQuote(null);
-                  setActiveQuote(null);
-                  localStorage.removeItem("dawncast:daily_quote");
-                  refetch();
-                }}
-                aria-label="Refresh quote"
-              >
-                <RefreshCw className="mr-2 h-4 w-4" /> Refresh
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {shareOpen && (
-        <ShareModal
-          text={activeQuote.text}
-          author={activeQuote.author}
-          onClose={() => setShareOpen(false)}
-        />
       )}
     </>
   );
+}
+
+// ── Main View ──────────────────────────────────────────────────
+return (
+  <>
+    <div className={`min-h-full transition-colors duration-1000 ease-in-out ${weatherClass}`}>
+      <div className="dc-container h-full flex flex-col py-6 space-y-10">
+        {/* Weather badge + history link */}
+        <div className="flex items-center justify-between gap-2 animate-[dc-enter_600ms_ease_both]">
+          <Link
+            to="/history"
+            className="dc-btn dc-btn-ghost dc-btn-sm gap-1 shrink-0"
+            aria-label="View quote history"
+          >
+            <History className="h-3.5 w-3.5" />
+            History
+          </Link>
+          <div className="dc-weather-badge backdrop-blur-sm bg-background/30 border-foreground/10 min-w-0">
+            <Cloud className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{weatherInfo.condition} · {Math.round(weatherInfo.temp)}°C</span>
+          </div>
+        </div>
+
+        {/* Quote card */}
+        <div className="flex-1 flex flex-col items-center justify-center animate-[dc-enter_800ms_ease_both_200ms]">
+          <div
+            className="dc-quote-card w-full shadow-xl"
+            style={
+              {
+                "--_glow-color": `var(--weather-${weatherClass.replace("weather-", "")}-glow)`,
+              } as React.CSSProperties & Record<string, string>
+            }
+          >
+            {/* Primary / Bonus label */}
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-4 text-center">
+              {quoteLabel}
+            </p>
+
+            <div className="flex justify-center mb-6">
+              <div className="dc-quote-tone !mb-0">{weatherInfo.toneLabel}</div>
+            </div>
+
+            <blockquote
+              className="dc-quote-text text-center"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              &ldquo;{quoteToDisplay?.text}&rdquo;
+            </blockquote>
+            <p className="dc-quote-author">— {quoteToDisplay?.author}</p>
+
+            <div className="dc-quote-footer">
+              <span>
+                {new Date().toLocaleDateString(undefined, {
+                  weekday: "long",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </span>
+              <span className="flex items-center gap-1">
+                <MapPin className="h-3 w-3" />
+                {cityQuery ?? "Near you"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-col gap-4 pb-12 animate-[dc-enter_800ms_ease_both_400ms]">
+          <button
+            onClick={startARMode}
+            className="dc-btn dc-btn-primary w-full h-14 text-lg"
+          >
+            <Camera className="mr-2 h-5 w-5" /> View in AR
+          </button>
+
+          <div className="flex flex-wrap gap-2 sm:gap-3">
+            <button className="dc-btn dc-btn-ghost flex-1 dc-btn-sm" onClick={handleShare}>
+              <ExternalLink className="mr-2 h-4 w-4" /> Share
+            </button>
+
+            <button
+              className="dc-btn dc-btn-ghost flex-1 dc-btn-sm"
+              onClick={() => bonusMutation.mutate()}
+              disabled={bonusMutation.isPending}
+              aria-label="Get a bonus quote"
+            >
+              <Sparkles className="mr-2 h-4 w-4" />
+              {bonusMutation.isPending ? "…" : "Another"}
+            </button>
+
+            <button
+              className="dc-btn dc-btn-ghost flex-1 dc-btn-sm"
+              onClick={() => {
+                setCachedQuote(null);
+                setActiveQuote(null);
+                localStorage.removeItem("dawncast:daily_quote");
+                queryClient.invalidateQueries({ queryKey });
+              }}
+              aria-label="Refresh quote"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" /> Refresh
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {shareOpen && (
+      <ShareModal
+        text={quoteToDisplay?.text ?? ""}
+        author={quoteToDisplay?.author ?? ""}
+        onClose={() => setShareOpen(false)}
+      />
+    )}
+  </>
+);
 }
