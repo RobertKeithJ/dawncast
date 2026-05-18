@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -9,13 +9,43 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
 }
 
+const SNOOZE_KEY = "dawncast_install_snoozed_until";
+const PERMANENT_KEY = "dawncast_install_dismissed_permanent";
+const DISMISS_COUNT_KEY = "dawncast_install_dismiss_count";
+const IOS_HINT_KEY = "dawncast_ios_hint_shown";
+const SNOOZE_DURATION_MS = 3 * 24 * 60 * 60 * 1000;
+const MAX_DISMISS_COUNT = 3;
+
 export function usePwaInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
-  const [isDismissed, setIsDismissed] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [showPrompt, setShowPrompt] = useState(false);
-  const [lastDismissTime, setLastDismissTime] = useState(0);
+  const [canInstall, setCanInstall] = useState(false);
+  const [showIosHint, setShowIosHint] = useState(false);
+  const hasShownToast = useRef(false);
+
+  const checkSnoozed = useCallback(() => {
+    try {
+      if (localStorage.getItem(PERMANENT_KEY) === "true") return true;
+      const snoozeUntil = localStorage.getItem(SNOOZE_KEY);
+      if (snoozeUntil) {
+        const expires = parseInt(snoozeUntil, 10);
+        if (Date.now() < expires) return true;
+        localStorage.removeItem(SNOOZE_KEY);
+      }
+    } catch (_err) {
+      return false;
+    }
+    return false;
+  }, []);
+
+  const checkDismissCount = useCallback(() => {
+    try {
+      const raw = localStorage.getItem(DISMISS_COUNT_KEY);
+      return raw ? parseInt(raw, 10) : 0;
+    } catch (_err) {
+      return 0;
+    }
+  }, []);
 
   useEffect(() => {
     const checkIfInstalled = () => {
@@ -24,13 +54,7 @@ export function usePwaInstall() {
       setIsInstalled(isStandalone || isInWebAppiOS);
     };
 
-    const checkIfMobile = () => {
-      const mobile = window.matchMedia("(max-width: 768px)").matches;
-      setIsMobile(mobile);
-    };
-
     checkIfInstalled();
-    checkIfMobile();
 
     const installedHandler = () => setIsInstalled(true);
     const mediaQuery = window.matchMedia("(display-mode: standalone)");
@@ -40,11 +64,14 @@ export function usePwaInstall() {
   }, []);
 
   useEffect(() => {
-    const dismissed = localStorage.getItem("pwa-install-dismissed");
-    const dismissTime = localStorage.getItem("pwa-install-dismissed-time");
-    if (dismissed && dismissTime) {
-      setIsDismissed(true);
-      setLastDismissTime(parseInt(dismissTime, 10));
+    const isIos = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isIos) {
+      try {
+        if (sessionStorage.getItem(IOS_HINT_KEY) !== "true") {
+          setShowIosHint(true);
+          sessionStorage.setItem(IOS_HINT_KEY, "true");
+        }
+      } catch (_err) { /* sessionStorage blocked */ }
     }
   }, []);
 
@@ -62,101 +89,71 @@ export function usePwaInstall() {
   }, []);
 
   useEffect(() => {
-    let mounted = true;
-    const checkInstallability = async () => {
-      if (mounted && !deferredPrompt && !isInstalled) {
-if (window.matchMedia("(display-mode: browser)").matches) {
-        const manifestLink = document.querySelector('link[rel="manifest"]') as HTMLLinkElement | null;
-          if (manifestLink) {
-            try {
-              const response = await fetch(manifestLink.href);
-              if (response.ok) {
-                const manifest = await response.json();
-                const hasIcons = manifest.icons && manifest.icons.length > 0;
-                const hasName = manifest.name || manifest.short_name;
-                if (hasIcons && hasName && !isInstalled && !isDismissed) {
-                  setShowPrompt(true);
-                  setIsDismissed(false);
-                }
-              }
-            } catch {
-            }
-          }
-        }
-      }
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null);
+      setCanInstall(false);
+      setIsInstalled(true);
+      try {
+        localStorage.setItem(PERMANENT_KEY, "true");
+      } catch (_err) { /* localStorage blocked */ }
     };
 
-    const interval = setInterval(checkInstallability, 2000);
-    setTimeout(checkInstallability, 1000);
-
-    return () => {
-      mounted = false;
-      clearInterval(interval);
-    };
-  }, [deferredPrompt, isInstalled, isDismissed]);
-
-  useEffect(() => {
-    if (deferredPrompt && !isInstalled) {
-      setShowPrompt(true);
-      setIsDismissed(false);
-    }
-  }, [deferredPrompt, isInstalled]);
-
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden && deferredPrompt && !isInstalled) {
-        const now = Date.now();
-        if (lastDismissTime && now - lastDismissTime < 30 * 60 * 1000) {
-          return;
-        }
-        setShowPrompt(true);
-        setIsDismissed(false);
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [deferredPrompt, isInstalled, lastDismissTime]);
-
-  const canInstall = showPrompt;
+    window.addEventListener("appinstalled", handleAppInstalled);
+    return () => window.removeEventListener("appinstalled", handleAppInstalled);
+  }, []);
 
   const install = useCallback(async () => {
     if (!deferredPrompt) return;
-
     await deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-
-    if (outcome === "accepted") {
-      setDeferredPrompt(null);
-      setShowPrompt(false);
-    } else if (outcome === "dismissed") {
-      setIsDismissed(true);
-      setShowPrompt(false);
-      localStorage.setItem("pwa-install-dismissed", "true");
-      localStorage.setItem("pwa-install-dismissed-time", Date.now().toString());
-    }
+    setDeferredPrompt(null);
+    setCanInstall(false);
+    hasShownToast.current = true;
+    return outcome;
   }, [deferredPrompt]);
 
-  const dismiss = useCallback(() => {
-    setIsDismissed(true);
-    setShowPrompt(false);
-    localStorage.setItem("pwa-install-dismissed", "true");
-    localStorage.setItem("pwa-install-dismissed-time", Date.now().toString());
-  }, []);
+  const dismiss = useCallback(
+    (writeDeferral = true) => {
+      setDeferredPrompt(null);
+      setCanInstall(false);
+      hasShownToast.current = true;
+      if (!writeDeferral) return;
 
-  const reset = useCallback(() => {
-    setIsDismissed(false);
-    setShowPrompt(false);
-    localStorage.removeItem("pwa-install-dismissed");
-    localStorage.removeItem("pwa-install-dismissed-time");
-  }, []);
+      try {
+        const count = checkDismissCount() + 1;
+        if (count >= MAX_DISMISS_COUNT) {
+          localStorage.setItem(PERMANENT_KEY, "true");
+          localStorage.removeItem(DISMISS_COUNT_KEY);
+          localStorage.removeItem(SNOOZE_KEY);
+        } else {
+          localStorage.setItem(DISMISS_COUNT_KEY, count.toString());
+          localStorage.setItem(SNOOZE_KEY, (Date.now() + SNOOZE_DURATION_MS).toString());
+        }
+      } catch (_err) { /* localStorage blocked */ }
+    },
+    [checkDismissCount]
+  );
+
+  const trigger = useCallback(
+    (delay = 1500) => {
+      if (!deferredPrompt || isInstalled || checkSnoozed() || hasShownToast.current) {
+        return;
+      }
+      setTimeout(() => {
+        if (!hasShownToast.current) {
+          setCanInstall(true);
+        }
+      }, delay);
+    },
+    [deferredPrompt, isInstalled, checkSnoozed]
+  );
 
   return {
     canInstall,
     isInstalled,
-    isMobile,
     install,
     dismiss,
-    reset,
+    trigger,
+    showIosHint,
   };
 }
