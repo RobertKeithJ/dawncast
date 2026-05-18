@@ -4,7 +4,7 @@
 
 ```
 http://localhost:3000 (development)
-https://your Railway url (production)
+https://your-server.up.railway.app (production)
 ```
 
 ## Endpoints
@@ -35,13 +35,15 @@ Get the primary daily quote based on weather conditions.
     "language": "en"
   },
   "weather": {
-    "temperatureCelsius": 22,
-    "weatherCode": 1,
-    "conditionLabel": "Mainly Clear"
+    "code": 1,
+    "condition": "Mainly Clear",
+    "temp": 22,
+    "toneId": "energy_action",
+    "toneLabel": "Energy & Action"
   },
   "meta": {
-    "toneCategory": "energy_action",
-    "isCached": false
+    "servedDate": "2026-05-18",
+    "fromWeatherCache": false
   }
 }
 ```
@@ -62,6 +64,8 @@ Get a bonus quote (different from primary).
 }
 ```
 
+All fields optional. If lat/lon not provided, uses geocoding from city field.
+
 **Response:**
 ```json
 {
@@ -72,8 +76,7 @@ Get a bonus quote (different from primary).
     "language": "en"
   },
   "meta": {
-    "toneCategory": "resilience_growth",
-    "isBonus": true
+    "servedDate": "2026-05-18"
   }
 }
 ```
@@ -100,8 +103,8 @@ Get quote history for a subscription.
       "servedAt": "2026-05-17T10:30:00Z",
       "weatherCode": 1,
       "temperatureCelsius": 22,
-      "toneCategory": "energy_action",
-      "isBonus": false
+      "toneLabel": "Energy & Action",
+      "isPrimary": false
     }
   ]
 }
@@ -206,12 +209,11 @@ Update user preferences.
 Returns server status.
 
 **Response:**
-```json
-{
-  "status": "ok",
-  "timestamp": "2026-05-17T10:00:00Z"
-}
 ```
+OK
+```
+
+---
 
 ## Error Responses
 

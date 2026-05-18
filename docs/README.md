@@ -1,4 +1,4 @@
-# Daily Motivational Quotes PWA
+# Dawncast
 
 Weather-aware motivational quotes Progressive Web Application with AR display support.
 
@@ -30,7 +30,7 @@ flowchart TB
         WeatherCache["weather_cache"]
     end
 
-    subgraph External["External APIs"]
+    subgraph External["External APIs (no API key required)"]
         OM["Open-Meteo\nWeather API"]
         Zen["ZenQuotes\nFallback API"]
     end
@@ -78,21 +78,23 @@ sequenceDiagram
 ## Monorepo Structure
 
 ```
-project-dailyquotes/
+dawncast/
 ├── apps/
-│   ├── web/                    # React + Vite frontend
+│   ├── web/                    # React + Vite frontend (port 3001)
 │   │   ├── src/
 │   │   │   ├── components/     # UI components
 │   │   │   ├── routes/         # TanStack Router routes
-│   │   │   ├── lib/            # API client, storage
-│   │   │   └── hooks/          # Custom React hooks
+│   │   │   ├── lib/            # API client, storage, utils
+│   │   │   ├── hooks/          # Custom React hooks
+│   │   │   └── index.css       # Global styles + CSS vars
 │   │   └── vite.config.ts      # Vite + PWA config
 │   │
-│   └── server/                 # Elysia + Bun backend
+│   └── server/                 # Elysia + Bun backend (port 3000)
 │       ├── src/
 │       │   ├── index.ts        # API routes
 │       │   ├── services/       # Business logic
 │       │   ├── functions.ts    # Utilities
+│       │   ├── constants.ts    # API URLs, defaults
 │       │   └── types.ts       # TypeScript types
 │       └── scripts/            # Seeding scripts
 │
@@ -111,7 +113,9 @@ project-dailyquotes/
 | Backend | Bun, Elysia, Drizzle ORM, PostgreSQL |
 | API Client | @elysiajs/eden (type-safe) |
 | PWA | vite-plugin-pwa, Workbox |
-| AI | Google Gemini (quote classification) |
+| UI Components | shadcn/ui (Base UI + Radix primitives) |
+| Toast | Sonner (Emil Kowalski) |
+| AI | Google Gemini (quote classification — optional) |
 
 ## Weather-to-Tone Mapping
 
@@ -134,26 +138,39 @@ project-dailyquotes/
 | `/api/subscribe` | POST | Register push subscription |
 | `/api/unsubscribe` | POST | Unregister push subscription |
 | `/api/preferences` | GET/POST | Get/set user preferences |
+| `/` | GET | Health check |
+
+## PWA Features
+
+- Offline-capable via Workbox caching
+- Installable as standalone app (PWA install prompt via Sonner toast)
+- iOS Safari hint toast with share button disambiguation
+- In-app browser detection ("Open in Safari" notice)
+- Camera access for AR display mode (simulated AR overlay)
+- Custom install prompt with permanent snooze / 3-dismiss permanent suppression
 
 ## Development Commands
 
 ```bash
+# Install dependencies
+bun install
+
 # Start development (both apps)
-pnpm run dev              # web:3001 + server:3000
-pnpm run dev:web         # Frontend only
-pnpm run dev:server      # Backend only
+bun run dev              # web:3001 + server:3000
+bun run dev:web         # Frontend only
+bun run dev:server      # Backend only
 
 # Build
-pnpm run build           # Build server
-pnpm run check-types     # TypeScript check
+bun run build           # Build server
+bun run check-types     # TypeScript check
 
 # Database
-pnpm run db:push         # Push schema
-pnpm run db:generate     # Generate client
-pnpm run db:studio       # Open Drizzle Studio
+bun run db:push         # Push schema
+bun run db:generate     # Generate client
+bun run db:studio       # Open Drizzle Studio
 
-# Seeding
-pnpm run seed:quotes     # Classify & seed from CSV
+# Seeding (requires GEMINI_API_KEY)
+bun run seed:quotes
 ```
 
 ## Environment Setup
@@ -165,15 +182,10 @@ VITE_SERVER_URL=http://localhost:3000
 
 **apps/server/.env:**
 ```
-CORS_ORIGIN=http://localhost:3001
 DATABASE_URL=postgresql://user:pass@host:5432/db
-DIRECT_URL=postgresql://user:pass@host:5432/db
-GEMINI_API_KEY=...
+CORS_ORIGIN=http://localhost:3001
+NODE_ENV=development
+# GEMINI_API_KEY=... (only for seeding)
 ```
 
-## PWA Features
-
-- Offline-capable via Workbox caching
-- Installable as standalone app
-- Background sync for notifications
-- Camera access for AR display mode
+Copy `.env.example` files for each app as a starting point.

@@ -327,14 +327,13 @@ function HomeComponent() {
             />
           )}
 
-          {/* Simulated AR badge */}
-          <div className="absolute top-6 left-6 z-20">
+          <div className="absolute top-4 left-4 md:left-6 z-20">
             <span className="text-[11px] font-semibold uppercase tracking-widest bg-black/50 text-white/80 border border-white/20 rounded-full px-3 py-1 backdrop-blur-sm">
               Simulated AR
             </span>
           </div>
 
-          <div className="absolute top-6 right-6 z-20">
+          <div className="absolute top-4 right-4 md:right-6 z-20">
             <button
               className="dc-btn dc-btn-ghost dc-btn-sm bg-black/40 text-white border-white/20 backdrop-blur-md"
               onClick={stopARMode}
@@ -356,7 +355,7 @@ function HomeComponent() {
             </div>
           </div>
 
-          <div className="absolute bottom-8 z-20 flex gap-4">
+          <div className="absolute bottom-[max(2rem,env(safe-area-inset-bottom))] z-20 flex gap-4">
             <button className="dc-btn dc-btn-primary" onClick={handleShare}>
               <ExternalLink className="mr-2 h-4 w-4" /> Share
             </button>
