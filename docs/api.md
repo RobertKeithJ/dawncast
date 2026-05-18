@@ -59,12 +59,14 @@ Get a bonus quote (different from primary).
 {
   "lat": 40.7128,
   "lon": -74.006,
+  "city": "New York",
   "subscriptionId": "uuid",
-  "language": "en"
+  "language": "en",
+  "excludeIds": ["uuid", "uuid"]
 }
 ```
 
-All fields optional. If lat/lon not provided, uses geocoding from city field.
+All fields optional. At least `lat/lon` or `city` is needed for weather. `excludeIds` is used for same-day deduplication on anonymous (non-subscribed) users — the server will not return any quote whose ID appears in this list.
 
 **Response:**
 ```json
@@ -72,8 +74,7 @@ All fields optional. If lat/lon not provided, uses geocoding from city field.
   "quote": {
     "id": "uuid",
     "text": "Another inspiring quote...",
-    "author": "Author Name",
-    "language": "en"
+    "author": "Author Name"
   },
   "meta": {
     "servedDate": "2026-05-18"

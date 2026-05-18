@@ -136,6 +136,13 @@ Same user + same day + same weather tone = same quote (stable hash-based selecti
 ### No-Repeat Window
 - 30-day dedup via `delivery_log` query
 - Same quote won't repeat within 30 days for the same subscription
+- **Anonymous users:** 30-day dedup is not available (no `subscriptionId`). Client tracks seen quote IDs in `localStorage` (`dawncast:seen_quote_ids`) and sends them as `excludeIds` on bonus quote requests. The server merges `excludeIds` with `extraExcludeIds` in `getBonusQuote()`.
+
+### Bonus Quote Flow
+- Primary quote is fetched → ID added to `seen_quote_ids` in localStorage
+- "Another" button triggers bonus fetch → sends `excludeIds` (all seen today) to server
+- Server excludes those IDs before selecting → guarantees a new quote
+- `seen_quote_ids` resets at midnight (new calendar day)
 
 ### PWA Install Flow
 - Android/Chrome: `beforeinstallprompt` event captured → Sonner toast after quote renders

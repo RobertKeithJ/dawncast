@@ -127,6 +127,10 @@ Coordinates are rounded to 2 decimal places (~1.1 km grid).
 
 ### No-Repeat Window
 30-day dedup via `delivery_log` query. Same quote won't repeat within 30 days.
+**Note:** Only applies to users with a `subscriptionId`. Anonymous users rely on client-side `seen_quote_ids` in localStorage.
+
+### Bonus Quote Deduplication (Anonymous Users)
+Since anonymous users have no `subscriptionId`, the server can't track their history via `delivery_log`. The client bridges this gap by maintaining a `seen_quote_ids` list in localStorage. On each bonus quote request, the client sends `excludeIds` (all quote IDs seen today). The server merges these with `extraExcludeIds` in `getBonusQuote()` before selecting.
 
 ### PWA Install Flow
 - Android/Chrome: Native `beforeinstallprompt` event captured → toast shown via Sonner after quote renders

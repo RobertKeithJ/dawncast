@@ -268,25 +268,52 @@ enum WMOWeatherCode {
 enum StorageKey {
   DailyQuote = "dawncast:daily_quote",
   QuoteHistory = "dawncast:history",
+  SeenQuoteIds = "dawncast:seen_quote_ids",
   SubscriptionId = "dawncast:subscription_id",
   Theme = "dawncast:theme",
 }
 
 // Cached daily quote in localStorage
-interface CachedDailyQuote {
-  quote: Quote;
-  weather: WeatherInfo;
-  servedDate: string;
-  toneCategory: string;
+interface StoredQuote {
+  id: string;
+  text: string;
+  author: string;
+  servedDate: string;    // YYYY-MM-DD in local timezone
+  toneId: string;
+  toneLabel: string;
+  weatherCode: number;
+  weatherCondition: string;
+  tempCelsius: number;
 }
 
 // Local quote history entry
 interface LocalHistoryEntry {
-  quote: Quote;
-  servedAt: string;
+  id: string;
+  text: string;
+  author: string;
+  servedDate: string;
+  toneId: string;
+  toneLabel: string;
   weatherCode: number;
-  temperatureCelsius: number;
-  toneCategory: string;
-  isBonus: boolean;
+  weatherCondition: string;
+  tempCelsius: number;
 }
+```
+
+### Bonus Quote Flow
+
+```typescript
+// Client sends seen IDs to exclude
+const excludeIds: string[] = getSeenQuoteIds(); // from localStorage
+
+// Bonus mutation body
+const body = { lat, lon, excludeIds };
+
+// Server merges excludeIds with 30-day delivery_log for subscribed users
+// For anonymous users, delivery_log has no entries → only excludeIds provides dedup
+const quote = await getBonusQuote({
+  subscriptionId,
+  weather,
+  extraExcludeIds: excludeIds,
+});
 ```
