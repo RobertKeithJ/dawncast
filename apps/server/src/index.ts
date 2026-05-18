@@ -7,6 +7,7 @@ import { eq } from "drizzle-orm";
 import { resolveWeather } from "./services/weather-service";
 import { getDailyQuote, getBonusQuote } from "./services/daily-quote-service";
 import { getQuoteHistory } from "./services/quote-service";
+import { getToneForWeatherCode, getWeatherConditionLabel } from "./functions";
 
 const app = new Elysia()
   .use(
@@ -71,11 +72,24 @@ const app = new Elysia()
   .post(
     "/api/quote/bonus",
     async ({ body }) => {
-      const weather = await resolveWeather({
-        lat: body.lat ?? null,
-        lon: body.lon ?? null,
-        city: body.city ?? null,
-      });
+      let weather;
+      if (body.cachedWeatherCode !== undefined) {
+        const { toneId, toneLabel } = getToneForWeatherCode(body.cachedWeatherCode);
+        weather = {
+          weatherCode: body.cachedWeatherCode,
+          temperatureCelsius: body.cachedTempCelsius ?? 25,
+          conditionLabel: body.cachedCondition ?? getWeatherConditionLabel(body.cachedWeatherCode),
+          toneId,
+          toneLabel,
+          fromCache: true,
+        };
+      } else {
+        weather = await resolveWeather({
+          lat: body.lat ?? null,
+          lon: body.lon ?? null,
+          city: body.city ?? null,
+        });
+      }
 
       const quote = await getBonusQuote({
         subscriptionId: body.subscriptionId ?? null,
@@ -89,6 +103,13 @@ const app = new Elysia()
           id: quote.id,
           text: quote.text,
           author: quote.author,
+        },
+        weather: {
+          code: weather.weatherCode,
+          condition: weather.conditionLabel,
+          temp: weather.temperatureCelsius,
+          toneId: weather.toneId,
+          toneLabel: weather.toneLabel,
         },
         meta: {
           isPrimary: false,
@@ -104,6 +125,9 @@ const app = new Elysia()
         subscriptionId: t.Optional(t.Union([t.String(), t.Null()])),
         language: t.Optional(t.Union([t.String(), t.Null()])),
         excludeIds: t.Optional(t.Array(t.String())),
+        cachedWeatherCode: t.Optional(t.Number()),
+        cachedTempCelsius: t.Optional(t.Number()),
+        cachedCondition: t.Optional(t.String()),
       }),
     },
   )
@@ -112,13 +136,16 @@ const app = new Elysia()
   .get(
     "/api/quote/history",
     async ({ query }) => {
+      if (!query.subscriptionId) {
+        return { entries: [] };
+      }
       const limit = query.limit ? parseInt(query.limit, 10) : 30;
       const entries = await getQuoteHistory(query.subscriptionId, limit);
       return { entries };
     },
     {
       query: t.Object({
-        subscriptionId: t.String(),
+        subscriptionId: t.Optional(t.String()),
         limit: t.Optional(t.String()),
       }),
     },

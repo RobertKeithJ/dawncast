@@ -8,6 +8,7 @@ import {
   setDailyQuote,
   markQuoteSeen,
   getSeenQuoteIds,
+  addBonusToHistory,
   type StoredQuote,
 } from "@/lib/storage";
 import {
@@ -46,6 +47,13 @@ function HomeComponent() {
   const [activeQuote, setActiveQuote] = useState<QuoteDisplay | null>(null);
   const [cachedQuote, setCachedQuote] = useState<StoredQuote | null>(null);
   const [bonusQuote, setBonusQuote] = useState<QuoteDisplay | null>(null);
+  const [bonusWeather, setBonusWeather] = useState<{
+    code: number;
+    condition: string;
+    temp: number;
+    toneId: string;
+    toneLabel: string;
+  } | null>(null);
   const queryClient = useQueryClient();
 
   const queryKey = ["daily-quote", location, cityQuery] as const;
@@ -138,8 +146,8 @@ function HomeComponent() {
     }
   }, [cachedQuote, activeQuote]);
 
-  // Derive weather info: prefer fresh API data, fall back to cached
-  const weatherInfo = data?.weather ?? (cachedQuote
+  // Derive weather info: prefer bonus, then fresh API data, then cached
+  const weatherInfo = bonusWeather ?? data?.weather ?? (cachedQuote
     ? {
         code: cachedQuote.weatherCode,
         condition: cachedQuote.weatherCondition,
@@ -161,12 +169,35 @@ function HomeComponent() {
       }
       const seenIds = getSeenQuoteIds();
       if (seenIds.length > 0) body.excludeIds = seenIds;
+      if (cachedQuote) {
+        body.cachedWeatherCode = cachedQuote.weatherCode;
+        body.cachedTempCelsius = cachedQuote.tempCelsius;
+        body.cachedCondition = cachedQuote.weatherCondition;
+      }
       const res = await api.api.quote.bonus.post(body);
       if (res.error) throw res.error;
       return res.data;
     },
     onSuccess: (bonus) => {
       markQuoteSeen(bonus.quote.id);
+      addBonusToHistory({
+        id: bonus.quote.id,
+        text: bonus.quote.text,
+        author: bonus.quote.author,
+        servedDate: bonus.meta.servedDate,
+        toneId: bonus.weather.toneId,
+        toneLabel: bonus.weather.toneLabel,
+        weatherCode: bonus.weather.code,
+        weatherCondition: bonus.weather.condition,
+        tempCelsius: bonus.weather.temp,
+      });
+      setBonusWeather({
+        code: bonus.weather.code,
+        condition: bonus.weather.condition,
+        temp: bonus.weather.temp,
+        toneId: bonus.weather.toneId,
+        toneLabel: bonus.weather.toneLabel,
+      });
       setBonusQuote({
         id: bonus.quote.id,
         text: bonus.quote.text,
