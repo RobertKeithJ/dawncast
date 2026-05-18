@@ -1,97 +1,77 @@
 # Dawncast
 
-This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines React, TanStack Router, Elysia, and more.
+Weather-aware motivational quotes PWA with AR display support. Delivers a daily quote whose tone matches your current weather.
 
 ## Features
 
 - **TypeScript** - For type safety and improved developer experience
 - **TanStack Router** - File-based routing with full type safety
-- **TailwindCSS** - Utility-first CSS for rapid UI development
-- **Shared UI package** - shadcn/ui primitives live in `packages/ui`
+- **TailwindCSS 4** - Utility-first CSS for rapid UI development
 - **Elysia** - Type-safe, high-performance framework
-- **Bun** - Runtime environment
-- **Drizzle** - TypeScript-first ORM
+- **Bun** - Runtime environment and package manager
+- **Drizzle ORM** - TypeScript-first ORM
 - **PostgreSQL** - Database engine
-- **PWA** - Progressive Web App support
-- **Turborepo** - Optimized monorepo build system
+- **PWA** - Progressive Web App support with offline caching
 
 ## Getting Started
 
-First, install the dependencies:
+```bash
+# Install dependencies
+bun install
+
+# Start development (web:3001, server:3000)
+bun run dev
+```
+
+Open [http://localhost:3001](http://localhost:3001) in your browser. The API runs at [http://localhost:3000](http://localhost:3000).
+
+### Database Setup
+
+1. Copy `apps/server/.env.example` → `apps/server/.env` and fill in your PostgreSQL connection string.
+2. Apply the schema:
 
 ```bash
-pnpm install
-```
-
-## Database Setup
-
-This project uses PostgreSQL with Drizzle ORM.
-
-1. Make sure you have a PostgreSQL database set up.
-2. Update your `apps/server/.env` file with your PostgreSQL connection details.
-
-3. Apply the schema to your database:
-
-```bash
-pnpm run db:push
-```
-
-Then, run the development server:
-
-```bash
-pnpm run dev
-```
-
-Open [http://localhost:5173](http://localhost:5173) in your browser to see the web application.
-The API is running at [http://localhost:3000](http://localhost:3000).
-
-## UI Customization
-
-React web apps in this stack share shadcn/ui primitives through `packages/ui`.
-
-- Change design tokens and global styles in `packages/ui/src/styles/globals.css`
-- Update shared primitives in `packages/ui/src/components/*`
-- Adjust shadcn aliases or style config in `packages/ui/components.json` and `apps/web/components.json`
-
-### Add more shared components
-
-Run this from the project root to add more primitives to the shared UI package:
-
-```bash
-npx shadcn@latest add accordion dialog popover sheet table -c packages/ui
-```
-
-Import shared components like this:
-
-```tsx
-import { Button } from "@project-dailyquotes/ui/components/button";
-```
-
-### Add app-specific blocks
-
-If you want to add app-specific blocks instead of shared primitives, run the shadcn CLI from `apps/web`.
-
-## Project Structure
-
-```
-project-dailyquotes/
-├── apps/
-│   ├── web/         # Frontend application (React + TanStack Router)
-│   └── server/      # Backend API (Elysia)
-├── packages/
-│   ├── ui/          # Shared shadcn/ui components and styles
-│   └── db/          # Database schema & queries
+bun run db:push
 ```
 
 ## Available Scripts
 
-- `pnpm run dev`: Start all applications in development mode
-- `pnpm run build`: Build all applications
-- `pnpm run dev:web`: Start only the web application
-- `pnpm run dev:server`: Start only the server
-- `pnpm run check-types`: Check TypeScript types across all apps
-- `pnpm run db:push`: Push schema changes to database
-- `pnpm run db:generate`: Generate database client/types
-- `pnpm run db:migrate`: Run database migrations
-- `pnpm run db:studio`: Open database studio UI
-- `cd apps/web && pnpm run generate-pwa-assets`: Generate PWA assets
+- `bun run dev` - Start all apps (web + server)
+- `bun run dev:web` - Frontend only (http://localhost:3001)
+- `bun run dev:server` - Backend only (http://localhost:3000)
+- `bun run build` - Build server for production
+- `bun run check-types` - TypeScript across all apps
+- `bun run lint` - ESLint across all apps
+- `bun run test` - Vitest unit tests
+- `bun run db:push` - Push schema to database
+- `bun run db:generate` - Generate Drizzle migrations
+- `bun run db:migrate` - Run migrations
+- `bun run db:studio` - Open Drizzle Studio UI
+
+### PWA Assets
+
+```bash
+cd apps/web && bun run generate-pwa-assets
+```
+After adding icon files to `apps/web/public/`, run the above to regenerate PWA assets.
+
+## Project Structure
+
+```
+dawncast/
+├── apps/
+│   ├── web/      # React + TanStack Router + Vite + TailwindCSS 4 + PWA
+│   └── server/  # Elysia + Bun + Drizzle ORM
+└── packages/
+    ├── ui/       # Shared shadcn/ui components
+    └── db/       # Database schema, migrations, seed
+```
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React, TanStack Router, Vite, TailwindCSS 4, vite-plugin-pwa |
+| Backend | Elysia, Bun |
+| Database | PostgreSQL, Drizzle ORM |
+| Monorepo | Turborepo |
