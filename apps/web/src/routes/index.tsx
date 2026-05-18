@@ -292,7 +292,7 @@ function HomeComponent() {
   }
 
   // ── API Error with no cache ────────────────────────────────────
-  if ((error || !activeQuote) && !cachedQuote) {
+  if (error && !cachedQuote && !data) {
     return (
       <div className="dc-container h-full flex flex-col items-center justify-center py-6 text-center transition-colors duration-700">
         <div className="animate-[dc-enter_500ms_ease_both]">
