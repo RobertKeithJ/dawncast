@@ -121,12 +121,14 @@ export async function getBonusQuote(params: {
   subscriptionId?: string | null;
   weather: WeatherResult;
   language?: string;
+  extraExcludeIds?: string[];
 }): Promise<DailyQuoteResult> {
-  const { subscriptionId, weather, language = "en" } = params;
+  const { subscriptionId, weather, language = "en", extraExcludeIds = [] } = params;
   const servedDate = getTodayDateString();
 
   // Exclude everything served in the last 30 days PLUS today's primary
-  const excludeIds = await getRecentlyServedIds(subscriptionId ?? null);
+  const recentIds = await getRecentlyServedIds(subscriptionId ?? null);
+  const excludeIds = [...new Set([...recentIds, ...extraExcludeIds])];
 
   // Use a different seed from the primary so it selects a different quote
   const seed = `${servedDate}:${weather.toneId}:${subscriptionId ?? "anon"}:bonus:${Date.now()}`;

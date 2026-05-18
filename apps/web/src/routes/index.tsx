@@ -6,6 +6,8 @@ import { getWeatherClass } from "@/lib/functions";
 import {
   getDailyQuote,
   setDailyQuote,
+  markQuoteSeen,
+  getSeenQuoteIds,
   type StoredQuote,
 } from "@/lib/storage";
 import {
@@ -43,6 +45,7 @@ function HomeComponent() {
   const [shareOpen, setShareOpen] = useState(false);
   const [activeQuote, setActiveQuote] = useState<QuoteDisplay | null>(null);
   const [cachedQuote, setCachedQuote] = useState<StoredQuote | null>(null);
+  const [bonusQuote, setBonusQuote] = useState<QuoteDisplay | null>(null);
   const queryClient = useQueryClient();
 
   const queryKey = ["daily-quote", location, cityQuery] as const;
@@ -111,6 +114,7 @@ function HomeComponent() {
     };
     setDailyQuote(quote);
     setCachedQuote(quote);
+    markQuoteSeen(data.quote.id);
     setActiveQuote({
       id: data.quote.id,
       text: data.quote.text,
@@ -123,6 +127,7 @@ function HomeComponent() {
   // When a cached quote loads (no API call), set it as active
   useEffect(() => {
     if (cachedQuote && !activeQuote) {
+      markQuoteSeen(cachedQuote.id);
       setActiveQuote({
         id: cachedQuote.id,
         text: cachedQuote.text,
@@ -147,25 +152,22 @@ function HomeComponent() {
   // Bonus quote mutation
   const bonusMutation = useMutation({
     mutationFn: async () => {
-      const body: {
-        lat?: number;
-        lon?: number;
-        city?: string;
-        subscriptionId?: string;
-        language?: string;
-      } = {};
+      const body: Record<string, string | number | string[]> = {};
       if (location) {
         body.lat = parseFloat(location.lat);
         body.lon = parseFloat(location.lon);
       } else if (cityQuery) {
         body.city = cityQuery;
       }
+      const seenIds = getSeenQuoteIds();
+      if (seenIds.length > 0) body.excludeIds = seenIds;
       const res = await api.api.quote.bonus.post(body);
       if (res.error) throw res.error;
       return res.data;
     },
     onSuccess: (bonus) => {
-      setActiveQuote({
+      markQuoteSeen(bonus.quote.id);
+      setBonusQuote({
         id: bonus.quote.id,
         text: bonus.quote.text,
         author: bonus.quote.author,
@@ -300,11 +302,13 @@ function HomeComponent() {
     );
   }
 
-  // Must have at least one source for the quote
-  if (!activeQuote && !data) return null;
+// Must have at least one source for the quote
+  if (!activeQuote && !data && !bonusQuote) return null;
+  if (!activeQuote && !bonusQuote && !weatherInfo) return null;
+
   if (!weatherInfo) return null;
 
-  const quoteToDisplay = activeQuote ?? (data ? {
+  const quoteToDisplay = bonusQuote ?? activeQuote ?? (data ? {
     id: data.quote.id,
     text: data.quote.text,
     author: data.quote.author,
@@ -463,7 +467,7 @@ return (
               aria-label="Get a bonus quote"
             >
               <Sparkles className="mr-2 h-4 w-4" />
-              {bonusMutation.isPending ? "…" : "Another"}
+              {bonusMutation.isPending ? "…" : "New Quote"}
             </button>
 
             <button
@@ -471,6 +475,7 @@ return (
               onClick={() => {
                 setCachedQuote(null);
                 setActiveQuote(null);
+                setBonusQuote(null);
                 localStorage.removeItem("dawncast:daily_quote");
                 queryClient.invalidateQueries({ queryKey });
               }}
