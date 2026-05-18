@@ -1,5 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
+import {
+  isIOSSafari,
+  isStandalone,
+  shouldShowIOSHint,
+  shouldShowIOSOpenInSafari,
+} from "@/lib/install-utils";
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -12,10 +18,7 @@ interface BeforeInstallPromptEvent extends Event {
 
 const SNOOZE_KEY = "dawncast_install_snoozed_until";
 const PERMANENT_KEY = "dawncast_install_dismissed_permanent";
-const DISMISS_COUNT_KEY = "dawncast_install_dismiss_count";
-const IOS_HINT_KEY = "dawncast_ios_hint_shown";
-const SNOOZE_DURATION_MS = 3 * 24 * 60 * 60 * 1000;
-const MAX_DISMISS_COUNT = 3;
+const IOS_HINT_SESSION_KEY = "dawncast_ios_hint_shown_session";
 const POST_INSTALL_TOAST_ID = "pwa-installed-toast";
 
 export function usePwaInstall() {
@@ -23,57 +26,34 @@ export function usePwaInstall() {
   const [isInstalled, setIsInstalled] = useState(false);
   const [canInstall, setCanInstall] = useState(false);
   const [showIosHint, setShowIosHint] = useState(false);
+  const [showOpenInSafari, setShowOpenInSafari] = useState(false);
   const hasShownToast = useRef(false);
 
-  const checkSnoozed = useCallback(() => {
-    try {
-      if (localStorage.getItem(PERMANENT_KEY) === "true") return true;
-      const snoozeUntil = localStorage.getItem(SNOOZE_KEY);
-      if (snoozeUntil) {
-        const expires = parseInt(snoozeUntil, 10);
-        if (Date.now() < expires) return true;
-        localStorage.removeItem(SNOOZE_KEY);
-      }
-    } catch (_err) {
-      return false;
-    }
-    return false;
-  }, []);
-
-  const checkDismissCount = useCallback(() => {
-    try {
-      const raw = localStorage.getItem(DISMISS_COUNT_KEY);
-      return raw ? parseInt(raw, 10) : 0;
-    } catch (_err) {
-      return 0;
-    }
-  }, []);
-
   useEffect(() => {
-    const checkIfInstalled = () => {
-      const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
-      const isInWebAppiOS = (window.navigator as { standalone?: boolean }).standalone === true;
-      setIsInstalled(isStandalone || isInWebAppiOS);
-    };
-
-    checkIfInstalled();
-
+    setIsInstalled(isStandalone());
     const installedHandler = () => setIsInstalled(true);
     const mediaQuery = window.matchMedia("(display-mode: standalone)");
     mediaQuery.addEventListener("change", installedHandler);
-
     return () => mediaQuery.removeEventListener("change", installedHandler);
   }, []);
 
   useEffect(() => {
-    const isIos = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-    if (isIos) {
+    const isIos = isIOSSafari();
+    const canShowHint = shouldShowIOSHint();
+    const canShowOpenInSafari = shouldShowIOSOpenInSafari();
+
+    if (canShowOpenInSafari) {
+      setShowOpenInSafari(true);
+      return;
+    }
+
+    if (isIos && canShowHint) {
+      setShowIosHint(true);
       try {
-        if (sessionStorage.getItem(IOS_HINT_KEY) !== "true") {
-          setShowIosHint(true);
-          sessionStorage.setItem(IOS_HINT_KEY, "true");
-        }
-      } catch (_err) { /* sessionStorage blocked */ }
+        sessionStorage.setItem(IOS_HINT_SESSION_KEY, "true");
+      } catch {
+        /* blocked */
+      }
     }
   }, []);
 
@@ -97,7 +77,9 @@ export function usePwaInstall() {
       setIsInstalled(true);
       try {
         localStorage.setItem(PERMANENT_KEY, "true");
-      } catch (_err) { /* localStorage blocked */ }
+      } catch {
+        /* blocked */
+      }
       toast.success("Dawncast added to your home screen", {
         id: POST_INSTALL_TOAST_ID,
         duration: 4000,
@@ -118,40 +100,55 @@ export function usePwaInstall() {
     return outcome;
   }, [deferredPrompt]);
 
-  const dismiss = useCallback(
-    (writeDeferral = true) => {
-      setDeferredPrompt(null);
-      setCanInstall(false);
-      hasShownToast.current = true;
-      if (!writeDeferral) return;
+  const dismiss = useCallback(() => {
+    setDeferredPrompt(null);
+    setCanInstall(false);
+    hasShownToast.current = true;
 
-      try {
-        const count = checkDismissCount() + 1;
-        if (count >= MAX_DISMISS_COUNT) {
-          localStorage.setItem(PERMANENT_KEY, "true");
-          localStorage.removeItem(DISMISS_COUNT_KEY);
-          localStorage.removeItem(SNOOZE_KEY);
-        } else {
-          localStorage.setItem(DISMISS_COUNT_KEY, count.toString());
-          localStorage.setItem(SNOOZE_KEY, (Date.now() + SNOOZE_DURATION_MS).toString());
-        }
-      } catch (_err) { /* localStorage blocked */ }
-    },
-    [checkDismissCount]
-  );
+    try {
+      localStorage.setItem(PERMANENT_KEY, "true");
+    } catch {
+      /* blocked */
+    }
+  }, []);
+
+  const dismissIOSHint = useCallback(() => {
+    setShowIosHint(false);
+    try {
+      sessionStorage.setItem(IOS_HINT_SESSION_KEY, "true");
+      localStorage.setItem(PERMANENT_KEY, "true");
+    } catch {
+      /* blocked */
+    }
+  }, []);
+
+  const dismissOpenInSafari = useCallback(() => {
+    setShowOpenInSafari(false);
+  }, []);
 
   const trigger = useCallback(
     (delay = 1500) => {
-      if (!deferredPrompt || isInstalled || checkSnoozed() || hasShownToast.current) {
+      if (!deferredPrompt || isInstalled || hasShownToast.current) return;
+
+      try {
+        if (localStorage.getItem(PERMANENT_KEY) === "true") return;
+        const snoozeUntil = localStorage.getItem(SNOOZE_KEY);
+        if (snoozeUntil) {
+          const expires = parseInt(snoozeUntil, 10);
+          if (Date.now() < expires) return;
+          localStorage.removeItem(SNOOZE_KEY);
+        }
+      } catch {
         return;
       }
+
       setTimeout(() => {
         if (!hasShownToast.current) {
           setCanInstall(true);
         }
       }, delay);
     },
-    [deferredPrompt, isInstalled, checkSnoozed]
+    [deferredPrompt, isInstalled]
   );
 
   return {
@@ -161,5 +158,8 @@ export function usePwaInstall() {
     dismiss,
     trigger,
     showIosHint,
+    showOpenInSafari,
+    dismissIOSHint,
+    dismissOpenInSafari,
   };
 }
