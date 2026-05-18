@@ -1,4 +1,4 @@
-import { cn } from "@project-dailyquotes/ui/lib/utils";
+import { cn } from "@dawncast/ui/lib/utils";
 
 function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
   return (

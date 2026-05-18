@@ -7,7 +7,7 @@
  * - 30-day no-repeat window enforced when subscriptionId is provided.
  */
 import { and, eq } from "drizzle-orm";
-import { db, deliveryLog, quotes } from "@project-dailyquotes/db";
+import { db, deliveryLog, quotes } from "@dawncast/db";
 import {
   selectQuote,
   fetchFallbackQuote,

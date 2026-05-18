@@ -2,8 +2,8 @@
  * QuoteService — deterministic quote selection with 30-day deduplication.
  */
 import { and, eq, gte, inArray, not, sql } from "drizzle-orm";
-import { db, quotes, deliveryLog } from "@project-dailyquotes/db";
-import type { NewDeliveryLog } from "@project-dailyquotes/db";
+import { db, quotes, deliveryLog } from "@dawncast/db";
+import type { NewDeliveryLog } from "@dawncast/db";
 import {
   ZENQUOTES_API_URL,
   DEFAULT_QUOTE_TEXT,

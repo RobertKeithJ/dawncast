@@ -3,7 +3,7 @@ import { fileURLToPath } from "url";
 import { join, dirname } from "path";
 import Papa from "papaparse";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { db, toneCategories, quotes, languageEnum } from "@project-dailyquotes/db";
+import { db, toneCategories, quotes, languageEnum } from "@dawncast/db";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 

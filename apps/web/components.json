@@ -13,8 +13,8 @@
   "iconLibrary": "lucide",
   "aliases": {
     "components": "@/components",
-    "utils": "@project-dailyquotes/ui/lib/utils",
-    "ui": "@project-dailyquotes/ui/components",
+    "utils": "@dawncast/ui/lib/utils",
+    "ui": "@dawncast/ui/components",
     "lib": "@/lib",
     "hooks": "@/hooks"
   },

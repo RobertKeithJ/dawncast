@@ -1,4 +1,4 @@
-import { cn } from "@project-dailyquotes/ui/lib/utils";
+import { cn } from "@dawncast/ui/lib/utils";
 import * as React from "react";
 
 function Label({ className, ...props }: React.ComponentProps<"label">) {

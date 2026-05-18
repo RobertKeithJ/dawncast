@@ -3,7 +3,7 @@
  * Reads from weather_cache before hitting the external API.
  */
 import { and, gt, sql } from "drizzle-orm";
-import { db, weatherCache } from "@project-dailyquotes/db";
+import { db, weatherCache } from "@dawncast/db";
 import { getToneForWeatherCode, getWeatherConditionLabel } from "../functions";
 import type { GeocodingResponse, OpenMeteoForecastResponse } from "../types";
 import {

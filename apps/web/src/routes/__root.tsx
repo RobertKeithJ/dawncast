@@ -1,4 +1,4 @@
-import { Toaster } from "@project-dailyquotes/ui/components/sonner";
+import { Toaster } from "@dawncast/ui/components/sonner";
 import { HeadContent, Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -19,11 +19,11 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
   head: () => ({
     meta: [
       {
-        title: "project-dailyquotes",
-      },
-      {
-        name: "description",
-        content: "project-dailyquotes is a web application",
+          title: "Dawncast",
+        },
+        {
+          name: "description",
+          content: "Weather-aware motivational quotes with AR display",
       },
     ],
     links: [

@@ -9,8 +9,8 @@ import {
   SheetTitle,
   SheetDescription,
   SheetFooter,
-} from "@project-dailyquotes/ui/components/sheet";
-import { Button } from "@project-dailyquotes/ui/components/button";
+} from "@dawncast/ui/components/sheet";
+import { Button } from "@dawncast/ui/components/button";
 import { usePwaInstall } from "@/hooks/use-pwa-install";
 import { SafariShareIcon } from "@/components/safari-share-icon";
 
