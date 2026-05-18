@@ -12,11 +12,11 @@
   },
   "iconLibrary": "lucide",
   "aliases": {
-    "components": "@project-dailyquotes/ui/components",
-    "utils": "@project-dailyquotes/ui/lib/utils",
-    "hooks": "@project-dailyquotes/ui/hooks",
-    "lib": "@project-dailyquotes/ui/lib",
-    "ui": "@project-dailyquotes/ui/components"
+    "components": "@dawncast/ui/components",
+    "utils": "@dawncast/ui/lib/utils",
+    "hooks": "@dawncast/ui/hooks",
+    "lib": "@dawncast/ui/lib",
+    "ui": "@dawncast/ui/components"
   },
   "menuColor": "default",
   "menuAccent": "subtle",

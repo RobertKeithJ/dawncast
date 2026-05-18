@@ -1,5 +1,5 @@
 {
-  "extends": "@project-dailyquotes/config/tsconfig.base.json",
+  "extends": "@dawncast/config/tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
     "outDir": "dist",

@@ -47,7 +47,7 @@ apps/
     └── src/index.ts
 
 packages/
-├── ui/            # Shared shadcn/ui components (import from @project-dailyquotes/ui)
+├── ui/            # Shared shadcn/ui components (import from @dawncast/ui)
 ├── db/            # Drizzle schema, migrations & seed
 ├── env/           # Env validation (server.ts, web.ts)
 └── config/        # Shared TypeScript config

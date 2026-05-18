@@ -1,11 +1,7 @@
 {
-  "extends": "@project-dailyquotes/config/tsconfig.base.json",
-  "compilerOptions": {
-    "jsx": "react-jsx",
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "paths": {
-      "@project-dailyquotes/ui/*": ["./src/*"]
-    }
+  "extends": "@dawncast/config/tsconfig.base.json",
+  "paths": {
+    "@dawncast/ui/*": ["./src/*"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules"]

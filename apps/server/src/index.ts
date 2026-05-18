@@ -1,7 +1,7 @@
 import { cors } from "@elysiajs/cors";
-import { env } from "@project-dailyquotes/env/server";
+import { env } from "@dawncast/env/server";
 import { Elysia, t } from "elysia";
-import { db, pushSubscriptions } from "@project-dailyquotes/db";
+import { db, pushSubscriptions } from "@dawncast/db";
 import { eq } from "drizzle-orm";
 
 import { resolveWeather } from "./services/weather-service";

@@ -1,5 +1,5 @@
 {
-  "name": "project-dailyquotes",
+  "name": "dawncast",
   "private": true,
   "workspaces": [
     "apps/*",
@@ -13,23 +13,23 @@
     "check-types": "bun run --filter web check-types && bun run --filter server check-types",
     "dev:web": "bun run --filter web dev",
     "dev:server": "bun run --filter server dev",
-    "db:push": "bun run --filter @project-dailyquotes/db db:push",
-    "db:studio": "bun run --filter @project-dailyquotes/db db:studio",
-    "db:generate": "bun run --filter @project-dailyquotes/db db:generate",
-    "db:migrate": "bun run --filter @project-dailyquotes/db db:migrate",
+    "db:push": "bun run --filter @dawncast/db db:push",
+    "db:studio": "bun run --filter @dawncast/db db:studio",
+    "db:generate": "bun run --filter @dawncast/db db:generate",
+    "db:migrate": "bun run --filter @dawncast/db db:migrate",
     "lint": "turbo lint",
     "test": "turbo test",
     "test:e2e": "bunx playwright test"
   },
   "dependencies": {
-    "@project-dailyquotes/env": "workspace:*",
+    "@dawncast/env": "workspace:*",
     "dotenv": "^16.4.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@playwright/test": "^1.60.0",
-    "@project-dailyquotes/config": "workspace:*",
+    "@dawncast/config": "workspace:*",
     "@types/bun": "^1.0.0",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^5.2.0",
